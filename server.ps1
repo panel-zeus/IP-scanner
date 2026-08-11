@@ -1,6 +1,3 @@
-# Zeus Scanner Core - Windows (PowerShell 5.1+)
-# Serves index.html from the same folder and scans IPs over TLS/SNI.
-
 $ErrorActionPreference = 'Stop'
 $port = 8000
 $url = "http://127.0.0.1:$port/"
