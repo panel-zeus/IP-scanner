@@ -11,7 +11,7 @@
 فقط با یک خط:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/frankfuvgfugkfc/scanner/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vantablack-0/CF-Scanner/main/install.sh | bash
 ```
 
 بعد از اینکه نصب تموم شد:
@@ -110,7 +110,7 @@ http://127.0.0.1:8000/
 ## 🛠 اجرای دستی (بدون نصب‌کننده)
 
 ```bash
-git clone https://github.com/frankfuvgfugkfc/scanner
+git clone https://github.com/vantablack-0/CF-Scanner
 cd scanner
 python3 server.py
 ```
