@@ -54,12 +54,12 @@
 		<div class="px-6 py-4 border-b border-amoled-border flex justify-between items-center bg-zinc-900/50 shrink-0">
 			<div class="flex items-center gap-2 relative">
 				<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-				<h3 class="font-bold text-zinc-100 text-sm">اسکنر لوکال آی‌پی تمیز زئوس</h3>
+				<h3 class="font-bold text-zinc-100 text-sm">آیپی اسکنر زئوس</h3>
 				<span id="core-status" class="flex w-3 h-3 ml-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] transition-colors duration-300 relative" title="هسته متصل است">
 					<span id="core-status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
 				</span>
 			</div>
-			<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.5 Xray SNI Scanner</span>
+			<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.5 ZEUS Scanner</span>
 		</div>
 		
 		<div class="p-4 md:p-5 flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
@@ -71,7 +71,7 @@
 				<div class="flex flex-col gap-4 overflow-y-auto flex-1 pl-4 pr-1 pb-2 custom-scrollbar">
 					
 					<div class="shrink-0">
-						<label class="block text-xs font-bold mb-1.5 text-zinc-300">آدرس پنل یا دامنه ورکر (SNI)</label>
+						<label class="block text-xs font-bold mb-1.5 text-zinc-300">آدرس پنل یا دامنه ورکر</label>
 						<input type="text" id="sni-input" placeholder="مثال: panel.domain.com" dir="ltr" spellcheck="false" class="w-full px-3 py-2.5 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-mono text-left text-zinc-100 transition">
 					</div>
 
@@ -194,7 +194,7 @@
 			</div>
 			
 			<!-- Right Column (Results) -->
-			<div id="scan-table-section" class="flex flex-col w-full md:w-[65%] lg:w-[70%] flex-1 min-h-[200px] relative opacity-50 pointer-events-none transition-opacity duration-300 mt-4 md:mt-0 gap-3">
+			<div id="scan-table-section" class="flex flex-col w-full md:w-[65%] lg:w-[70%] flex-1 min-h-[400px] md:min-h-[200px] relative opacity-50 pointer-events-none transition-opacity duration-300 mt-4 md:mt-0 gap-3">
 				
 				<!-- Stats Boxes -->
 				<div class="grid grid-cols-3 gap-2 shrink-0">
@@ -213,15 +213,15 @@
 				</div>
 
 				<div class="flex flex-col border border-amoled-border bg-amoled-input rounded-md overflow-hidden flex-1 relative">
-					<div class="grid grid-cols-12 gap-1 p-2 border-b border-amoled-border bg-zinc-900/40 text-[10px] font-bold text-zinc-400 text-center shrink-0 items-center">
+					<div class="grid grid-cols-7 md:grid-cols-12 gap-x-1 gap-y-2 md:gap-y-0 p-2 border-b border-amoled-border bg-zinc-900/40 text-[9px] md:text-[10px] font-bold text-zinc-400 text-center shrink-0 items-center">
 						<div class="col-span-1">ردیف</div>
-						<div class="col-span-3 text-left pl-2">IP : PORT</div>
+						<div class="col-span-6 md:col-span-3 text-left pl-2">IP : PORT</div>
 						<div class="col-span-1" title="آیا این آی‌پی متعلق به شبکه کلودفلر است؟">کلودفلر</div>
-						<div class="col-span-1" title="امتیاز کلی از ۱۰۰">امتیاز / 100</div>
+						<div class="col-span-1" title="امتیاز کلی از ۱۰۰">امتیاز<span class="hidden md:inline"> / 100</span></div>
 						<div class="col-span-1" title="میانه زمان پاسخ">پینگ</div>
 						<div class="col-span-1" title="درصد بسته‌های از دست رفته">لاست</div>
 						<div class="col-span-2" id="col-stab" title="انحراف معیار پینگ یا سرعت دانلود">پایداری</div>
-						<div class="col-span-2" title="نتیجه‌ی تست واقعی با هسته Xray">Xray</div>
+						<div class="col-span-1 md:col-span-2" title="نتیجه‌ی تست واقعی با هسته Xray">Xray</div>
 					</div>
 					<div id="results-container" class="overflow-y-auto flex-1 p-2 text-xs font-mono space-y-1 custom-scrollbar">
 						<div class="h-full flex items-center justify-center text-zinc-600 font-sans text-xs">
@@ -464,11 +464,11 @@
 		}
 
 		function xrayCell(state, testing) {
-			if (testing) return '<div class="col-span-2 flex items-center justify-center"><span class="px-1 py-0.5 text-[9px] bg-blue-900/30 text-blue-400 border border-blue-800 rounded font-bold">درحال‌تست</span></div>';
+			if (testing) return '<div class="col-span-1 md:col-span-2 flex items-center justify-center"><span class="px-1 py-0.5 text-[9px] bg-blue-900/30 text-blue-400 border border-blue-800 rounded font-bold">تست</span></div>';
 			const v = state && state.xray;
-			if (!v) return '<div class="col-span-2 text-center text-[10px] text-zinc-600">-</div>';
-			if (v.ok) return `<div class="col-span-2 flex items-center justify-center" title="${v.latency}ms"><span class="px-1.5 py-0.5 text-[9px] bg-green-900/30 text-green-400 border border-green-800 rounded font-bold">پاس</span></div>`;
-			return `<div class="col-span-2 flex items-center justify-center" title="${escapeHtml(v.error || '')}"><span class="px-1.5 py-0.5 text-[9px] bg-red-900/30 text-red-400 border border-red-800 rounded font-bold">رد</span></div>`;
+			if (!v) return '<div class="col-span-1 md:col-span-2 text-center text-[10px] text-zinc-600">-</div>';
+			if (v.ok) return `<div class="col-span-1 md:col-span-2 flex items-center justify-center" title="${v.latency}ms"><span class="px-1.5 py-0.5 text-[9px] bg-green-900/30 text-green-400 border border-green-800 rounded font-bold">پاس</span></div>`;
+			return `<div class="col-span-1 md:col-span-2 flex items-center justify-center" title="${escapeHtml(v.error || '')}"><span class="px-1.5 py-0.5 text-[9px] bg-red-900/30 text-red-400 border border-red-800 rounded font-bold">رد</span></div>`;
 		}
 
 		function rowHtml(index, ip, state, xrayTesting) {
@@ -479,26 +479,26 @@
 				const testing = state === 'testing';
 				return `
 					${rank}
-					<div class="col-span-3 text-left pl-2 truncate" dir="ltr"><span class="${testing ? 'text-zinc-100' : 'text-zinc-600'} font-mono">${label}</span></div>
+					<div class="col-span-6 md:col-span-3 text-left pl-2 truncate" dir="ltr"><span class="${testing ? 'text-zinc-100' : 'text-zinc-600'} font-mono">${label}</span></div>
 					<div class="col-span-1 text-center text-zinc-500">-</div>
 					<div class="col-span-1 text-center text-[10px] text-zinc-500">-</div>
 					<div class="col-span-1 text-center text-zinc-500">-</div>
 					<div class="col-span-1 text-center text-zinc-500">-</div>
 					<div class="col-span-2 text-center text-[10px] text-zinc-500">-</div>
-					<div class="col-span-2 text-center text-[10px] text-zinc-500">-</div>`;
+					${xrayCell(null, testing)}`;
 			}
 
 			if (!state.success) {
 				const blocked = state.error && /blocked/i.test(state.error);
 				return `
 					${rank}
-					<div class="col-span-3 text-left pl-2 truncate" dir="ltr" title="${escapeHtml(state.error || ip)}"><span class="text-zinc-600 font-mono">${label}</span></div>
+					<div class="col-span-6 md:col-span-3 text-left pl-2 truncate" dir="ltr" title="${escapeHtml(state.error || ip)}"><span class="text-zinc-600 font-mono">${label}</span></div>
 					<div class="col-span-1 text-center text-zinc-500">-</div>
 					<div class="col-span-1 text-center text-[10px] text-red-500 font-bold">${blocked ? 'مسدود' : 'مردود'}</div>
 					<div class="col-span-1 text-center text-red-500">-</div>
 					<div class="col-span-1 text-center text-red-500">-</div>
 					<div class="col-span-2 text-center text-[10px] text-red-500">-</div>
-					<div class="col-span-2 text-center text-[10px] text-zinc-500">-</div>`;
+					${xrayCell(state, xrayTesting)}`;
 			}
 
 			const cf = state.cloudflare ? '<span class="bg-orange-900/30 text-orange-400 border border-orange-800/50 rounded-sm px-1.5 py-0.5 text-[8px] font-bold leading-none">CF</span>' : '<span class="text-zinc-600">-</span>';
@@ -511,12 +511,12 @@
 
 			return `
 				${rank}
-				<div class="col-span-3 text-left pl-2 truncate flex items-center" dir="ltr" title="IP: ${label}:${state.port}">
+				<div class="col-span-6 md:col-span-3 text-left pl-2 truncate flex items-center" dir="ltr" title="IP: ${label}:${state.port}">
 					<span class="text-zinc-100 font-mono">${label}</span><span class="text-zinc-500 font-mono">:${state.port}</span>
 				</div>
 				<div class="col-span-1 flex items-center justify-center">${cf}</div>
 				<div class="col-span-1 flex items-center justify-center font-bold ${sc} text-[11px]" dir="ltr">
-					${state.score}<span class="text-[8px] text-zinc-500 font-normal ml-[1px]">/100</span>
+					${state.score}<span class="text-[8px] text-zinc-500 font-normal ml-[1px] hidden md:inline">/100</span>
 				</div>
 				<div class="col-span-1 text-center font-mono text-[11px] ${pingColor(state.median)}">${state.median}</div>
 				<div class="col-span-1 text-center font-mono text-[11px] ${lossColor(state.loss)}">${state.loss}%</div>
@@ -527,7 +527,7 @@
 		function renderPendingRows() {
 			const resultsContainer = document.getElementById('results-container');
 			resultsContainer.innerHTML = fetchedIPs
-				.map((ip, i) => `<div class="grid grid-cols-12 gap-1 items-center py-1.5 border-b border-amoled-border/50 text-zinc-400 hover:bg-zinc-800/20 transition">${rowHtml(i, ip, null)}</div>`)
+				.map((ip, i) => `<div class="grid grid-cols-7 md:grid-cols-12 gap-x-1 gap-y-2 md:gap-y-0 items-center py-2 md:py-1.5 border-b border-amoled-border/50 text-zinc-400 hover:bg-zinc-800/20 transition">${rowHtml(i, ip, null)}</div>`)
 				.join('');
 		}
 
@@ -688,7 +688,7 @@
 		function renderFinalRows(container) {
 			let i = 0;
 			let html = healthyIPs
-				.map(item => `<div class="grid grid-cols-12 gap-1 items-center py-1.5 border-b border-amoled-border/50 text-zinc-400 hover:bg-zinc-800/40 transition cursor-pointer copyable-row" data-copy="${item.port === 443 ? item.ip : item.ip + ':' + item.port}">${rowHtml(i++, item.ip, item)}</div>`)
+				.map(item => `<div class="grid grid-cols-7 md:grid-cols-12 gap-x-1 gap-y-2 md:gap-y-0 items-center py-2 md:py-1.5 border-b border-amoled-border/50 text-zinc-400 hover:bg-zinc-800/40 transition cursor-pointer copyable-row" data-copy="${item.port === 443 ? item.ip : item.ip + ':' + item.port}">${rowHtml(i++, item.ip, item)}</div>`)
 				.join('');
 			container.innerHTML = html;
 			
