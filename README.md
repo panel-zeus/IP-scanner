@@ -12,14 +12,13 @@ This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candida
 **Requirement:** Python 3 must be installed on the system.
 
 1. Download the project as a ZIP file from [GitHub](https://github.com/panel-zeus/IP-scanner/archive/refs/heads/main.zip) and extract it.
-2. Download the Xray core executable for Windows and place it in the `./bin/` directory (e.g., `./bin/xray.exe`).
-3. Open a Command Prompt or PowerShell in the extracted folder and run:
+2. Open a Command Prompt or PowerShell in the extracted folder and run:
    ```cmd
    python server.py
    ```
-4. The scanner interface will be available at `http://127.0.0.1:8000/`.
+3. The scanner interface will be available at `http://127.0.0.1:8000/`.
 
-*(Note: Without the Xray executable, the basic IP scanner will still function, but the Xray verification and speed test features will be disabled.)*
+*(Note: The required Xray core is already included in the `bin` directory for Windows users, so no additional configuration is needed. If you choose to remove it, the basic IP scanner will still function, but the Xray verification and speed test features will be disabled.)*
 
 ### 📱 Android (Termux) & Linux
 An automated one-line installer is provided for Linux and Termux environments. It automatically handles dependencies, downloads the appropriate Xray core based on the CPU architecture, and configures the environment.
@@ -85,5 +84,13 @@ In the generated test configuration, only the `address` is replaced with the can
 
 ---
 
-## 📌 Summary
-**Zeus Scanner** is a Cloudflare IP scanner that goes beyond standard TLS/SNI verification and latency measurement. It provides the ability to test top IPs using a real Xray core and perform speed tests from within the tunnel, ensuring practical usability.
+
+# 💰 Donate & Support
+
+<p align="center">Built with ❤️</p>
+
+<p align="center"><a href="https://donatonion.ir-netlify.workers.dev"><b>https://donatonion.ir-netlify.workers.dev</b></a></p>
+
+<p align="center">Thank you for your support in keeping this open-source project alive and actively developed! 🙏</p>
+
+---
