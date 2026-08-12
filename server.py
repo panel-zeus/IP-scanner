@@ -542,6 +542,7 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    import webbrowser
     try:
         httpd = ThreadingHTTPServer((BIND_HOST, PORT), ZeusRequestHandler)
     except OSError as exc:
@@ -550,9 +551,11 @@ if __name__ == '__main__':
     print("\033[96m==========================================\033[0m")
     print("\033[92m  Zeus Scanner Core (Unified) is RUNNING!\033[0m")
     display_host = '127.0.0.1' if BIND_HOST in ('0.0.0.0', '::') else BIND_HOST
-    print(f"\033[93m  Open in Browser: http://{display_host}:{PORT}/\033[0m")
+    url = f"http://{display_host}:{PORT}/"
+    print(f"\033[93m  Open in Browser: {url}\033[0m")
     print("\033[90m  Do NOT close this terminal during scan.\033[0m")
     print("\033[96m==========================================\033[0m")
+    threading.Timer(0.5, lambda: webbrowser.open(url)).start()
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
