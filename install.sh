@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Zeus Scanner — one-line installer for Termux & Linux
-#   curl -fsSL https://raw.githubusercontent.com/vantablack-0/CF-Scanner/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/panel-zeus/IP-scanner/main/install.sh | bash
 set -euo pipefail
 
 # ─── config ────────────────────────────────────────────────────────────────────
-REPO="${ZEUS_REPO:-vantablack-0/CF-Scanner}"
+REPO="${ZEUS_REPO:-panel-zeus/IP-scanner}"
 BRANCH="${ZEUS_BRANCH:-main}"
 RAW="${ZEUS_RAW_BASE:-https://raw.githubusercontent.com/$REPO/$BRANCH}"
 XRAY_TAG="${ZEUS_XRAY_TAG:-latest}"
@@ -73,8 +73,8 @@ printf "\n"
 printf "${C}${BOLD}"
 printf "  ╔══════════════════════════════════════════════╗\n"
 printf "  ║                                              ║\n"
-printf "  ║    ⚡  Z E U S   S C A N N E R              ║\n"
-printf "  ║    Clean Cloudflare IP Finder + Xray Core   ║\n"
+printf "  ║    ⚡  Z E U S   S C A N N E R               ║\n"
+printf "  ║    Clean Cloudflare IP Finder + Xray Core    ║\n"
 printf "  ║                                              ║\n"
 printf "  ╚══════════════════════════════════════════════╝\n"
 printf "${N}"
@@ -184,9 +184,9 @@ printf "  ${G}✓${N}  Version    ${D}%s${N}\n" "$XRAY_VER"
 # ─── step 4: scanner files ─────────────────────────────────────────────────────
 step "Downloading scanner files"
 
-FILES="index.html tailwind.css server.py xray.py"
+FILES="index.html server.py xray.py"
 COUNT=0
-TOTAL=4
+TOTAL=3
 for f in $FILES; do
     spin_start "[$((COUNT+1))/$TOTAL] $f ..."
     curl -fsSL --retry 3 --retry-delay 2 -o "$DEST/$f.part" "$RAW/$f" \
