@@ -405,7 +405,9 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
             return
 
         candidates = []
-        for item in (data.get('candidates') or [])[:XRAY_TOP_N]:
+        # اگر تست سرعت روشن بود ۵ تای اول، در غیر این صورت همه کاندیداها بررسی شوند
+        limit = XRAY_TOP_N if data.get('speed') else 1000
+        for item in (data.get('candidates') or [])[:limit]:
             if not isinstance(item, dict):
                 continue
             ip = str(item.get('ip') or '').strip()
