@@ -8,7 +8,7 @@ This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candida
 
 ## 🚀 Installation & Usage
 
-### 🪟 Windows (Recommended)
+### 💻 Windows (Recommended)
 **Requirement:** Python 3 must be installed on the system.
 
 1. The project archive must be downloaded by clicking the button below, and subsequently extracted:
