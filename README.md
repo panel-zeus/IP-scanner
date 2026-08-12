@@ -8,7 +8,7 @@ This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candida
 
 ## 🚀 Installation & Usage
 
-### 🪟 Windows (Recommended)
+### 💻 Windows (Recommended)
 **Requirement:** Python 3 must be installed on the system.
 
 1. Download the project as a ZIP file from [GitHub](https://github.com/panel-zeus/IP-scanner/archive/refs/heads/main.zip) and extract it.
