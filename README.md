@@ -1,132 +1,89 @@
 # ⚡️ Zeus Scanner
 
-زئوس یه اسکنر آی‌پی تمیز کلادفلره که با هسته‌ی واقعی Xray کار می‌کنه.
+Zeus Scanner is a clean Cloudflare IP scanner integrated with a real Xray core.
 
-این اسکنر آی‌پی‌های لبه‌ی Cloudflare رو با TLS/SNI تست می‌کنه، بهترین‌هاشون رو با هسته‌ی واقعی Xray روی کانفیگ خودت می‌سنجه و در نهایت برات speedtest واقعی از داخل تانل می‌گیره.
+This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candidates with an actual Xray core using a provided configuration, and performs a real speed test from within the tunnel.
 
 ---
 
-## 🚀 نصب روی ترموکس
+## 🚀 Installation & Usage
 
-فقط با یک خط:
+### 🪟 Windows (Recommended)
+**Requirement:** Python 3 must be installed on the system.
 
+1. Download the project as a ZIP file from [GitHub](https://github.com/panel-zeus/IP-scanner/archive/refs/heads/main.zip) and extract it.
+2. Download the Xray core executable for Windows and place it in the `./bin/` directory (e.g., `./bin/xray.exe`).
+3. Open a Command Prompt or PowerShell in the extracted folder and run:
+   ```cmd
+   python server.py
+   ```
+4. The scanner interface will be available at `http://127.0.0.1:8000/`.
+
+*(Note: Without the Xray executable, the basic IP scanner will still function, but the Xray verification and speed test features will be disabled.)*
+
+### 📱 Android (Termux) & Linux
+An automated one-line installer is provided for Linux and Termux environments. It automatically handles dependencies, downloads the appropriate Xray core based on the CPU architecture, and configures the environment.
+
+Run the following command:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vantablack-0/CF-Scanner/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/panel-zeus/IP-scanner/main/install.sh | bash
 ```
-
-بعد از اینکه نصب تموم شد:
-
+Once the installation is complete, start the scanner by running:
 ```bash
 zeus
 ```
-
-خودش مرورگر رو روی آدرس زیر باز می‌کنه:
-
-```text
-http://127.0.0.1:8000/
-```
-
-به همین راحتی!
-
-کارهایی مثل نصب پایتون، پیدا کردن و دانلود هسته‌ی Xray مناسب پردازنده‌ی گوشیت و تنظیم فایل‌ها کلاً خودکار انجام میشه.
-
-روی لینوکس دسکتاپ هم دقیقاً همین دستور کار می‌کنه.
+The browser will automatically open `http://127.0.0.1:8000/`.
 
 ---
 
-## 🧠 چطوری کار می‌کنه؟
+## 🧠 How It Works
 
-### 1. کشف
+### 1. Discovery
+A TLS connection is initiated to each IP on selected ports, sending the specific panel SNI.
 
-به هر آی‌پی روی پورت‌های انتخابی TLS می‌زنه و SNI پنل خودت رو می‌فرسته.
+### 2. HTTP Verification
+The response must contain the `cf-ray` or `Server: cloudflare` headers.
+Statuses like `403`, `409`, or `429` indicate that the IP is reachable but access is refused; therefore, the IP is discarded.
 
-### 2. تأیید HTTP
+### 3. Funnel Screening
+For large lists (up to 1000 IPs), a rapid initial scan is performed. Only the best candidates are subsequently subjected to multiple precise tests to maintain both speed and accuracy.
 
-پاسخ باید هدر `cf-ray` یا `Server: cloudflare` داشته باشه.
+### 4. Precise Measurement
+Tests are repeated multiple times. Median ping, jitter, and packet loss are calculated independently, alongside TCP and TLS handshake durations.
 
-وضعیت‌های `403`، `409` یا `429` یعنی آی‌پی زنده و در دسترسه اما ما رو رد می‌کنه، پس تمیز نیست و کنار گذاشته میشه.
+### 5. Real Xray Testing
+For the top-ranking IPs, a real tunnel is established using the provided configuration, and a `generate_204` request is made from within the tunnel. A valid response confirms that the IP successfully routes the configuration.
 
-### 3. غربال‌گری قیفی
+### 6. Real Speed Test
+When the "Speed Test" option is enabled, throughput is measured from within the tunnel using `speed.cloudflare.com`, providing accurate real-world metrics rather than a raw socket test.
 
-برای لیست‌های بزرگ (تا ۱۰۰۰ آی‌پی)، اول همه یک‌بار سریع بررسی میشن، بعد فقط بهترین‌ها چندبار با دقت تست میشن تا هم سرعت حفظ بشه هم دقت.
-
-### 4. اندازه‌گیری دقیق
-
-تست‌ها چند بار تکرار میشن؛ میانه، جیتر و پکت‌لاست جداگانه، و زمان TCP و TLS هم جداگانه محاسبه میشن.
-
-### 5. تست واقعی Xray
-
-برای آی‌پی‌های برتر، یه تانل واقعی با کانفیگ خودت بالا میاد و از داخلش `generate_204` گرفته میشه.
-
-اگه پاسخ معتبر برگرده، یعنی اون آی‌پی واقعاً کانفیگ تو رو رد می‌کنه.
-
-### 6. speedtest واقعی
-
-وقتی گزینه «تست سرعت» رو روشن کنی، سرعت از داخل همون تانل و با `speed.cloudflare.com` سنجیده میشه، نه روی یه سوکت خالی.
-
-### نکته‌ی کلیدی مرحله‌ی ۵
-
-در کانفیگ ساخته‌شده فقط `address` با آی‌پی کاندید عوض میشه؛ اما `serverName` و `Host` دست‌نخورده می‌مونن.
-
-اینطوری همه چی ثابته و فقط لبه‌ای که ازش رد میشی تغییر می‌کنه.
+**Key detail regarding Xray Testing:**
+In the generated test configuration, only the `address` is replaced with the candidate IP; `serverName` and `Host` remain untouched. This ensures all parameters remain constant while only the routing edge changes.
 
 ---
 
-## 📂 فایل‌های پروژه
+## 📂 Project Structure
 
-| فایل | کارش چیه؟ |
+| File | Description |
 |---|---|
-| `install.sh` | نصب‌کننده‌ی یک‌خطی خودکار (ترموکس / لینوکس) |
-| `index.html` | رابط کاربری برنامه |
-| `tailwind.css` | استایل کامپایل‌شده و آفلاین برنامه |
-| `tailwind.input.css` | فایل ورودی برای ساخت استایل Tailwind |
-| `server.py` | هسته‌ی اصلی اسکن و API ها |
-| `xray.py` | مدیریت هسته‌ی Xray، پارس کانفیگ، تانل و speedtest |
-| `server.ps1` | هسته‌ی ویندوز (نوشته‌شده با PowerShell) |
+| `install.sh` | Automated one-line installer for Termux / Linux |
+| `index.html` | User interface |
+| `server.py` | Main scanning core and API server |
+| `xray.py` | Xray core management, config parsing, tunneling, and speed tests |
+| `test_core.py` | Unit tests for verifying logic and preventing bugs |
 
 ---
 
-## ⚙️ متغیرهای محیطی
+## ⚙️ Environment Variables
 
-| متغیر | پیش‌فرض | کارش چیه؟ |
+| Variable | Default | Description |
 |---|---|---|
-| `ZEUS_PORT` | `8000` | پورتی که رابط کاربری روش بالا میاد |
-| `XRAY_BIN` | `./bin/xray` | مسیر فایل اجرایی هسته‌ی Xray |
-| `ZEUS_DIR` | `~/zeus-scanner` | مسیر محل نصب |
-| `ZEUS_XRAY_TAG` | `latest` | نسخه‌ی Xray برای دانلود |
+| `ZEUS_PORT` | `8000` | Port used for the web interface |
+| `XRAY_BIN` | `./bin/xray` | Path to the Xray core executable |
+| `ZEUS_DIR` | `~/zeus-scanner` | Installation directory (Linux/Termux) |
+| `ZEUS_XRAY_TAG` | `latest` | Xray release version to download |
 
 ---
 
-## 🪟 ویندوز
-
-`server.ps1`
-
-نسخه‌ی PowerShell اسکن TLS/SNI و لغو واقعی اسکن رو پشتیبانی می‌کنه، اما قابلیت‌هایی مثل اجرای Xray، speedtest داخل تانل و حالت دقیق فقط توی هسته‌ی پایتون فعالن.
-
-رابط کاربری این موضوع رو از `/api/ping` تشخیص میده و گزینه‌هایی که توی ویندوز پشتیبانی نمیشن رو غیرفعال می‌کنه.
-
----
-
-## 🛠 اجرای دستی (بدون نصب‌کننده)
-
-```bash
-git clone https://github.com/vantablack-0/CF-Scanner
-cd scanner
-python3 server.py
-```
-
-برای اینکه تست Xray کار کنه، فایل اجرایی هسته رو توی مسیر زیر بذار:
-
-```text
-./bin/xray
-```
-
-یا متغیر `XRAY_BIN` رو تنظیم کن.
-
-بدون اون هم اسکن کار می‌کنه اما ستون Xray توی نتایج خالی می‌مونه.
-
----
-
-## 📌 خلاصه
-
-**Zeus Scanner** یک اسکنر IP برای Cloudflare است که علاوه بر بررسی TLS/SNI و اندازه‌گیری کیفیت اتصال، امکان تست واقعی آی‌پی‌های برتر با هسته‌ی Xray و انجام speedtest از داخل تانل را فراهم می‌کند.
+## 📌 Summary
+**Zeus Scanner** is a Cloudflare IP scanner that goes beyond standard TLS/SNI verification and latency measurement. It provides the ability to test top IPs using a real Xray core and perform speed tests from within the tunnel, ensuring practical usability.
