@@ -1,8 +1,20 @@
 # ⚡️ Zeus Scanner
 
-Zeus Scanner is a clean Cloudflare IP scanner integrated with a real Xray core.
+<p align="center">
+  <b>Language:</b> 
+  <a href="README.md"><b>English</b></a> | 
+  <a href="README_FA.md"><b>فارسی</b></a>
+</p>
+
+Zeus Scanner is a modern, high-performance Cloudflare IP scanner integrated with a real Xray core.
 
 This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candidates with an actual Xray core using a provided configuration, and performs a real speed test from within the tunnel.
+
+### 🌟 New in v1.6
+- **Offline Cloudflare Random CIDR Sampler:** Generate random valid Cloudflare IPs directly from official Cloudflare subnets (over 1.5 million IPs) completely offline, with zero external network dependencies.
+- **Smart Optional SNI / Host:** Entering a panel or worker address is now fully optional. If a config is provided, SNI is extracted automatically; otherwise, it defaults to `cloudflare.com` for instant scanning.
+- **Resilient Multi-Mirror Repositories:** Online operator IP lists backed by fast jsDelivr CDN mirrors and a built-in offline Iranian operator database.
+- **Audio & Desktop Web Notifications:** Receive an audio chime and browser desktop notification as soon as the scan finishes, even when running long scans in the background.
 
 ---
 

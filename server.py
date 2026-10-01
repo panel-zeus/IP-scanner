@@ -325,7 +325,7 @@ def scan_many(ips, sni, ports, timeout, passes, deep, precise, cancel_event=None
 
 class ZeusRequestHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    server_version = 'ZeusScanner/1.5'
+    server_version = 'ZeusScanner/1.6'
 
     def setup(self):
         super().setup()
@@ -380,7 +380,7 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
                                                    "speed": bool(binary),
                                                    "precise": True}})
         elif path == '/':
-            self._send(200, HTML_CONTENT, 'text/html; charset=utf-8')
+            self._send(200, load_ui(), 'text/html; charset=utf-8')
         elif path == '/tailwind.css':
             try:
                 with open(TAILWIND_PATH, 'rb') as fh:
@@ -475,9 +475,11 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
             if not isinstance(data, dict):
                 self._send_json(400, {"error": "invalid payload"})
                 return
-            sni = data.get('sni', '')
+            sni = (data.get('sni') or '').strip()
+            if not sni:
+                sni = 'cloudflare.com'
             ips = data.get('ips') or []
-            if not isinstance(ips, list) or not isinstance(sni, str):
+            if not isinstance(ips, list):
                 self._send_json(400, {"error": "invalid payload"})
                 return
             if not is_valid_host(sni):

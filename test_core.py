@@ -38,6 +38,13 @@ class ScanTests(unittest.TestCase):
         self.assertEqual(deduped, ['1.1.1.1', '8.8.8.8'])
         self.assertEqual(len(deduped), 2)
 
+    def test_sni_defaults_to_cloudflare_when_empty_or_omitted(self):
+        """When sni is empty or omitted in payload, it defaults to cloudflare.com."""
+        for raw_sni in ['', None, '   ']:
+            sni = (raw_sni or '').strip() or 'cloudflare.com'
+            self.assertEqual(sni, 'cloudflare.com')
+            self.assertTrue(server.is_valid_host(sni))
+
     def test_scan_many_refines_only_a_shortlist(self):
         def fake_scan(ip, sni, ports, timeout, passes, deep, cancel_event=None):
             return {'ip': ip, 'success': True, 'score': int(ip.split('.')[-1]),
@@ -97,9 +104,9 @@ class XrayConfigTests(unittest.TestCase):
 
     def test_tunnel_cleans_up_when_startup_fails(self):
         with tempfile.TemporaryDirectory() as temp:
-            fake = os.path.join(temp, 'xray')
+            fake = os.path.join(temp, 'xray.cmd' if os.name == 'nt' else 'xray')
             with open(fake, 'w', encoding='utf-8') as fh:
-                fh.write('#!/bin/sh\nexit 1\n')
+                fh.write('@exit /b 1\n' if os.name == 'nt' else '#!/bin/sh\nexit 1\n')
             os.chmod(fake, 0o755)
             spec = xray.parse_link('trojan://password@example.com:443?security=tls')
             tunnel = xray.XrayTunnel(fake, spec, '1.1.1.1', 21999)

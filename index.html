@@ -51,7 +51,7 @@
 	<div class="w-full max-w-lg md:max-w-6xl bg-amoled-card border border-amoled-border rounded-md shadow-2xl overflow-hidden relative z-10 flex flex-col flex-1 min-h-0 max-h-[85vh]">
 		
 		<!-- Header -->
-		<div class="px-6 py-4 border-b border-amoled-border flex justify-between items-center bg-zinc-900/50 shrink-0">
+		<div class="px-4 md:px-6 py-3 md:py-4 border-b border-amoled-border flex justify-between items-center bg-zinc-900/50 shrink-0">
 			<div class="flex items-center gap-2 relative">
 				<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
 				<h3 class="font-bold text-zinc-100 text-sm">آیپی اسکنر زئوس</h3>
@@ -59,7 +59,14 @@
 					<span id="core-status-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
 				</span>
 			</div>
-			<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.5 ZEUS Scanner</span>
+			<div class="flex items-center gap-2">
+				<button id="btn-notify-toggle" onclick="toggleNotifications()" class="px-2.5 py-1 rounded-md text-xs font-bold border transition flex items-center gap-1.5 bg-blue-950/40 border-blue-800 text-blue-400 hover:bg-blue-900/40" title="اعلان صوتی و دسکتاپ هنگام اتمام اسکن">
+					<svg id="icon-notify-on" class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+					<svg id="icon-notify-off" class="w-3.5 h-3.5 text-zinc-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4l1.405-1.405A2.032 2.032 0 006 12.158V11c0-.404.04-.8.115-1.183m2.23-2.23A5.992 5.992 0 0112 5.341V5a2 2 0 114 0v.341c1.385.69 2.473 1.83 2.885 3.245M18 12.158v2.001L19.414 15H10m-1 0v1a3 3 0 006 0v-1M3 3l18 18"/></svg>
+					<span id="text-notify" class="text-[10px] md:text-[11px]">اعلان: فعال</span>
+				</button>
+				<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.6 ZEUS</span>
+			</div>
 		</div>
 		
 		<div class="p-4 md:p-5 flex flex-col md:flex-row gap-4 md:gap-6 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
@@ -71,8 +78,11 @@
 				<div class="flex flex-col gap-4 overflow-y-auto flex-1 pl-4 pr-1 pb-2 custom-scrollbar">
 					
 					<div class="shrink-0">
-						<label class="block text-xs font-bold mb-1.5 text-zinc-300">آدرس پنل یا دامنه ورکر</label>
-						<input type="text" id="sni-input" placeholder="مثال: panel.domain.com" dir="ltr" spellcheck="false" class="w-full px-3 py-2.5 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-mono text-left text-zinc-100 transition">
+						<div class="flex items-center justify-between mb-1.5">
+							<label class="block text-xs font-bold text-zinc-300">آدرس پنل یا دامنه ورکر (اختیاری)</label>
+							<span class="text-[10px] text-zinc-500 font-normal">پیش‌فرض: cloudflare.com</span>
+						</div>
+						<input type="text" id="sni-input" placeholder="اختیاری — مثال: panel.domain.com" dir="ltr" spellcheck="false" class="w-full px-3 py-2.5 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-mono text-left text-zinc-100 transition">
 					</div>
 
 					<div class="shrink-0">
@@ -84,18 +94,57 @@
 					</div>
 					
 					<div class="space-y-2 shrink-0">
-						<div class="border border-amoled-border rounded-md overflow-hidden bg-amoled-input/50">
-							<button onclick="toggleAccordion('github')" class="w-full px-3 py-2.5 flex justify-between items-center hover:bg-zinc-800/30 transition text-xs font-bold text-zinc-300">
+						<!-- Accordion 1: Offline Cloudflare Random CIDR Sampler -->
+						<div class="border border-emerald-900/60 rounded-md overflow-hidden bg-amoled-input/50">
+							<button onclick="toggleAccordion('offline')" class="w-full px-3 py-2.5 flex justify-between items-center hover:bg-zinc-800/30 transition text-xs font-bold text-zinc-300">
 								<span class="flex items-center gap-2">
-									<svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/></svg>
-									دریافت آی‌پی از مخزن
+									<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+									تولید تصادفی کلودفلر (آفلاین)
+									<span class="px-1.5 py-0.2 bg-emerald-900/40 text-emerald-400 border border-emerald-800/50 rounded text-[9px]">تضمینی</span>
 								</span>
-								<svg id="icon-github" class="w-4 h-4 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+								<svg id="icon-offline" class="w-4 h-4 transform transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
 							</button>
-							<div id="content-github" class="p-3 space-y-4 border-t border-amoled-border bg-amoled-card transition-all">
+							<div id="content-offline" class="p-3 space-y-4 border-t border-amoled-border bg-amoled-card transition-all">
 								<div class="grid grid-cols-2 gap-3">
 									<div>
-										<label class="block text-[10px] font-medium mb-1.5 text-zinc-400">اوپراتور</label>
+										<label class="block text-[10px] font-medium mb-1.5 text-zinc-400">رنج ساب‌نت</label>
+										<select id="cf-subnet-select" class="w-full px-2 py-2 bg-amoled-input border border-amoled-border rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 text-zinc-300 cursor-pointer">
+											<option value="all">همه رنج‌های رسمی (۱.۵ میلیون آی‌پی)</option>
+											<option value="104.16.0.0/13">104.16.0.0/13 (بسیار محبوب)</option>
+											<option value="104.24.0.0/14">104.24.0.0/14 (بسیار محبوب)</option>
+											<option value="172.64.0.0/13">172.64.0.0/13 (محبوب)</option>
+											<option value="162.158.0.0/15">162.158.0.0/15</option>
+											<option value="198.41.128.0/17">198.41.128.0/17</option>
+											<option value="188.114.96.0/20">188.114.96.0/20</option>
+											<option value="141.101.64.0/18">141.101.64.0/18</option>
+											<option value="108.162.192.0/18">108.162.192.0/18</option>
+										</select>
+									</div>
+									<div>
+										<label class="block text-[10px] font-medium mb-1.5 text-zinc-400">تعداد دریافت</label>
+										<input type="number" id="offline-ip-count" min="1" max="1000" value="20" dir="ltr" class="w-full px-3 py-2 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-mono text-center text-zinc-100 transition">
+									</div>
+								</div>
+								<button type="button" onclick="generateOfflineIps()" class="w-full py-2 bg-transparent border border-emerald-600 text-emerald-500 hover:bg-emerald-900/40 hover:text-emerald-400 font-bold rounded-md text-xs transition shadow-sm flex items-center justify-center gap-2">
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+									تولید نمونه‌های تصادفی (کاملاً آفلاین)
+								</button>
+							</div>
+						</div>
+
+						<!-- Accordion 2: Online / Mirror Repositories by Operator -->
+						<div class="border border-amoled-border rounded-md overflow-hidden bg-amoled-input/50">
+							<button onclick="toggleAccordion('online')" class="w-full px-3 py-2.5 flex justify-between items-center hover:bg-zinc-800/30 transition text-xs font-bold text-zinc-300">
+								<span class="flex items-center gap-2">
+									<svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/></svg>
+									دریافت بر اساس اپراتور (آنلاین / پشتیبان)
+								</span>
+								<svg id="icon-online" class="w-4 h-4 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+							</button>
+							<div id="content-online" class="p-3 space-y-4 border-t border-amoled-border bg-amoled-card transition-all hidden">
+								<div class="grid grid-cols-2 gap-3">
+									<div>
+										<label class="block text-[10px] font-medium mb-1.5 text-zinc-400">اپراتور</label>
 										<select id="operator-select" class="w-full px-3 py-2 bg-amoled-input border border-amoled-border rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-zinc-300 cursor-pointer disabled:opacity-50">
 											<option value="">در حال دریافت...</option>
 										</select>
@@ -107,10 +156,12 @@
 								</div>
 								<button type="button" id="btn-fetch" onclick="fetchIpsForScan()" class="w-full py-2 bg-transparent border border-blue-600 text-blue-500 hover:bg-blue-900/40 hover:text-blue-400 font-bold rounded-md text-xs transition shadow-sm flex items-center justify-center gap-2" disabled>
 									<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-									در حال ارتباط با مخزن...
+									در حال بارگذاری مخازن...
 								</button>
 							</div>
 						</div>
+
+						<!-- Accordion 3: Manual Input -->
 						<div class="border border-amoled-border rounded-md overflow-hidden bg-amoled-input/50">
 							<button onclick="toggleAccordion('manual')" class="w-full px-3 py-2.5 flex justify-between items-center hover:bg-zinc-800/30 transition text-xs font-bold text-zinc-300">
 								<span class="flex items-center gap-2">
@@ -281,7 +332,64 @@
 	
 	<!-- Logic from the Advanced System -->
 	<script>
-		const IPS_SOURCE_URL = 'https://hoplimit.shop/ips.txt';
+		// Official Cloudflare IPv4 CIDR Blocks
+		const CLOUDFLARE_CIDRS = [
+			'104.16.0.0/13',
+			'104.24.0.0/14',
+			'172.64.0.0/13',
+			'162.158.0.0/15',
+			'198.41.128.0/17',
+			'197.234.240.0/22',
+			'188.114.96.0/20',
+			'190.93.240.0/20',
+			'141.101.64.0/18',
+			'108.162.192.0/18',
+			'173.245.48.0/20',
+			'103.21.244.0/22',
+			'103.22.200.0/22',
+			'103.31.4.0/22',
+			'131.0.72.0/22'
+		];
+
+		// Online sources & mirrors for operator-specific clean IPs
+		const ONLINE_SOURCES = [
+			{ url: 'https://cdn.jsdelivr.net/gh/vfarid/cf-clean-ips@main/list.json', type: 'vfarid_json' },
+			{ url: 'https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json', type: 'vfarid_json' }
+		];
+
+		const OPERATOR_NAMES = {
+			'MCI': 'همراه اول (MCI)',
+			'MTN': 'ایرانسل (Irancell)',
+			'RTL': 'رایتل (Rightel)',
+			'MKH': 'مخابرات (TCI)',
+			'SHT': 'شاتل (Shatel)',
+			'AST': 'آسیاتک (Asiatech)',
+			'PRS': 'پارس آنلاین (ParsOnline)',
+			'HWB': 'های‌وب (HiWeb)',
+			'RSP': 'رسپینا (Respina)',
+			'AFN': 'افرانت (Afranet)',
+			'SBN': 'صبانت (Sabanet)',
+			'MBT': 'مبین‌نت (Mobinnet)',
+			'ZTL': 'زیتل (ZiTel)'
+		};
+
+		// Built-in offline fallback database for Iranian operators (never fails even without internet)
+		const BUILTIN_OPERATOR_IPS = {
+			"MCI": ["172.66.213.38", "104.19.250.20", "104.22.75.105", "104.16.219.230", "162.159.1.94", "104.17.88.212", "104.17.42.10", "104.22.51.45", "162.159.32.35", "104.23.123.239", "104.27.196.92", "104.18.72.191", "104.20.2.1", "104.16.29.8", "172.65.188.62", "172.67.229.179", "104.24.255.191", "104.16.119.47", "104.17.225.199", "104.20.149.108", "104.17.232.114", "172.65.237.80", "104.17.20.55", "104.21.231.123", "104.19.180.169", "104.27.38.85", "104.27.115.85", "172.65.229.187", "104.21.33.129", "172.64.150.2", "104.27.96.222", "104.27.122.56", "104.16.8.3", "104.24.1.69", "104.22.51.241", "104.25.225.41", "172.68.62.168", "104.27.5.173", "104.24.161.123", "104.20.251.248", "172.65.92.30", "172.65.137.125", "104.17.229.103", "104.24.84.148", "104.20.21.111", "104.27.1.133", "104.21.55.49", "104.25.92.198", "104.20.66.92", "104.24.154.5", "104.24.194.105", "104.27.1.129", "104.16.206.227", "172.67.32.82", "104.25.99.169", "172.67.123.23", "104.27.65.143", "172.65.64.243", "104.16.246.91", "104.20.181.114", "104.19.240.189", "104.27.101.40", "172.71.165.178", "172.71.160.32", "104.24.183.89", "104.24.24.243", "104.16.106.32", "104.19.244.250", "172.67.214.41", "104.18.71.193", "104.27.97.174", "104.27.97.42", "172.64.162.23", "172.64.106.208", "104.25.35.227", "104.16.250.250", "172.65.9.134", "104.18.40.89", "172.65.14.217", "104.16.169.7", "104.25.235.38", "104.25.64.147", "104.19.75.119", "104.20.9.79", "172.65.181.102", "104.21.198.255", "104.22.38.61", "104.16.183.101", "104.27.203.169", "104.21.211.74", "104.24.160.221", "172.67.84.174", "104.25.193.8", "104.24.145.43", "104.19.99.238", "172.65.57.200", "104.17.80.176", "104.21.93.170", "104.22.4.136", "104.24.225.78", "104.17.47.58", "172.68.118.177", "104.25.63.151", "104.23.113.202", "104.16.72.175", "104.20.151.9", "104.24.189.34", "104.18.190.52", "172.65.29.31", "104.18.10.128", "104.16.32.142", "104.25.33.15"],
+			"MTN": ["199.59.243.225", "172.67.186.42", "104.21.19.124", "203.32.121.53", "104.19.54.50", "104.27.62.243", "172.65.13.222", "104.22.13.192", "104.20.224.95", "172.65.223.246", "172.65.130.220", "172.65.103.23", "104.19.255.51", "104.24.185.137", "45.95.241.156", "45.85.119.87", "191.101.251.190", "45.95.241.94", "45.95.241.150", "45.85.119.207"],
+			"RTL": ["162.251.82.187", "162.159.250.246", "104.18.220.84", "104.25.134.44", "172.65.12.104", "162.159.25.11", "104.21.24.116", "104.18.53.172", "104.20.19.160"],
+			"SHT": ["104.24.62.187", "104.19.55.158", "104.17.44.130", "104.27.44.196", "104.16.25.72", "104.19.154.46", "104.21.228.32", "104.21.225.94", "104.18.83.84", "104.21.65.250", "172.71.94.40", "104.19.155.206", "104.21.83.92", "104.19.28.32", "104.21.95.137", "104.16.1.195", "104.21.11.206", "104.29.105.26", "104.18.27.8", "162.158.22.223", "172.67.197.170", "172.70.184.144", "104.19.20.140", "104.26.192.144", "104.20.157.73", "104.23.99.219", "104.17.177.224", "104.16.242.124", "104.20.77.131", "104.19.160.142", "172.67.26.173", "104.22.60.6", "104.24.172.243", "172.65.20.231", "104.20.75.10", "104.24.137.130", "104.27.35.232", "104.25.105.122", "104.27.23.251", "104.21.209.83", "172.71.129.222", "104.18.22.254", "104.31.16.181", "45.142.120.54"],
+			"MKH": ["104.16.4.103", "172.66.47.74", "104.20.156.248", "104.25.255.254"],
+			"MBT": ["185.148.105.52", "198.41.202.5", "104.22.11.129", "104.17.101.35"],
+			"AST": ["104.21.51.208"],
+			"HWB": ["104.16.6.65"],
+			"PRS": ["104.16.6.65"],
+			"RSP": ["162.159.62.69"],
+			"AFN": ["172.66.213.38"],
+			"SBN": ["104.20.62.55"],
+			"ZTL": ["104.17.231.69"]
+		};
+
 		const NORMAL_BATCH_SIZE = 1000;
 		const PRECISE_BATCH_SIZE = 200;
 		const MAX_CONCURRENT = 1;
@@ -302,6 +410,7 @@
 		
 		let xrayAvailable = false;
 		let coreCapabilities = { xray: false, speed: false, precise: true };
+		let notificationsEnabled = localStorage.getItem('zeus_notifications_enabled') !== 'false';
 
 		function escapeHtml(value) {
 			return String(value).replace(/[&<>"']/g, ch => ({
@@ -309,22 +418,94 @@
 			})[ch]);
 		}
 
-		function toggleAccordion(mode) {
-			const githubContent = document.getElementById('content-github');
-			const manualContent = document.getElementById('content-manual');
-			const githubIcon = document.getElementById('icon-github');
-			const manualIcon = document.getElementById('icon-manual');
-			if (mode === 'github') {
-				githubContent.classList.remove('hidden');
-				manualContent.classList.add('hidden');
-				githubIcon.classList.add('rotate-180');
-				manualIcon.classList.remove('rotate-180');
+		function updateNotificationUI() {
+			const onIcon = document.getElementById('icon-notify-on');
+			const offIcon = document.getElementById('icon-notify-off');
+			const label = document.getElementById('text-notify');
+			const btn = document.getElementById('btn-notify-toggle');
+			if (!onIcon || !offIcon || !label || !btn) return;
+			if (notificationsEnabled) {
+				onIcon.classList.remove('hidden');
+				offIcon.classList.add('hidden');
+				label.textContent = 'اعلان: فعال';
+				btn.className = 'px-2.5 py-1 rounded-md text-xs font-bold border transition flex items-center gap-1.5 bg-blue-950/40 border-blue-800 text-blue-400 hover:bg-blue-900/40';
 			} else {
-				manualContent.classList.remove('hidden');
-				githubContent.classList.add('hidden');
-				manualIcon.classList.add('rotate-180');
-				githubIcon.classList.remove('rotate-180');
+				onIcon.classList.add('hidden');
+				offIcon.classList.remove('hidden');
+				label.textContent = 'اعلان: خاموش';
+				btn.className = 'px-2.5 py-1 rounded-md text-xs font-bold border transition flex items-center gap-1.5 bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800';
 			}
+		}
+
+		function toggleNotifications() {
+			notificationsEnabled = !notificationsEnabled;
+			localStorage.setItem('zeus_notifications_enabled', notificationsEnabled);
+			updateNotificationUI();
+			if (notificationsEnabled) {
+				if ('Notification' in window && Notification.permission === 'default') {
+					Notification.requestPermission();
+				}
+				playSuccessChime();
+				showToast('اعلان صوتی و وب‌نوتیفیکیشن فعال شد');
+			} else {
+				showToast('اعلان‌ها غیرفعال شدند', 'error');
+			}
+		}
+
+		function playSuccessChime() {
+			if (!notificationsEnabled) return;
+			try {
+				const AudioCtx = window.AudioContext || window.webkitAudioContext;
+				if (!AudioCtx) return;
+				const ctx = new AudioCtx();
+				const now = ctx.currentTime;
+				const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+				notes.forEach((freq, idx) => {
+					const osc = ctx.createOscillator();
+					const gain = ctx.createGain();
+					osc.type = 'sine';
+					osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+					gain.gain.setValueAtTime(0, now + idx * 0.12);
+					gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.12 + 0.02);
+					gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.35);
+					osc.connect(gain);
+					gain.connect(ctx.destination);
+					osc.start(now + idx * 0.12);
+					osc.stop(now + idx * 0.12 + 0.38);
+				});
+			} catch (e) {
+				console.warn('Audio chime failed:', e);
+			}
+		}
+
+		function sendDesktopNotification(title, body) {
+			if (!notificationsEnabled || !('Notification' in window)) return;
+			if (Notification.permission === 'granted') {
+				try {
+					new Notification(title, {
+						body: body,
+						icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⚡</text></svg>'
+					});
+				} catch (e) {
+					console.warn('Desktop notification error:', e);
+				}
+			}
+		}
+
+		function toggleAccordion(mode) {
+			const modes = ['offline', 'online', 'manual'];
+			modes.forEach(m => {
+				const content = document.getElementById('content-' + m);
+				const icon = document.getElementById('icon-' + m);
+				if (!content || !icon) return;
+				if (m === mode) {
+					content.classList.remove('hidden');
+					icon.classList.add('rotate-180');
+				} else {
+					content.classList.add('hidden');
+					icon.classList.remove('rotate-180');
+				}
+			});
 		}
 
 		function syncStabHeader() {
@@ -358,54 +539,161 @@
 			catch (e) { return input.trim().split('/')[0].split(':')[0]; }
 		}
 
-		async function loadIpsFromRepo() {
-			const btn = document.getElementById('btn-fetch');
+		function extractSniFromConfig(uri) {
+			uri = (uri || '').trim();
+			if (!uri) return '';
 			try {
-				const response = await fetch(IPS_SOURCE_URL + '?t=' + Date.now(), { cache: 'no-store' });
-				if (!response.ok) throw new Error('HTTP ' + response.status);
-				const text = await response.text();
-				const blocks = text.split('----------');
-				cachedIpsData = {};
-				blocks.forEach(block => {
-					const lines = block.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
-					if (lines.length === 0) return;
-					let opName = "Unknown";
-					const ips = [];
-					lines.forEach(line => {
-						if (line.startsWith('#')) {
-							const name = line.slice(1).trim();
-							if (name) opName = name;
-							return;
-						}
-						if (line.startsWith('[source')) return;
-						const value = line.split('#')[0].trim();
-						if (ipToLong(value) !== null) ips.push(value);
-					});
-					if (ips.length > 0) cachedIpsData[opName] = (cachedIpsData[opName] || []).concat(ips);
-				});
-				if (Object.keys(cachedIpsData).length === 0) throw new Error('Empty list');
-				const select = document.getElementById('operator-select');
-				select.innerHTML = '<option value="all">همه (توصیه شده)</option>';
-				Object.keys(cachedIpsData).forEach(op => {
-					const option = document.createElement('option');
-					option.value = op;
-					option.textContent = op;
-					select.appendChild(option);
-				});
-				btn.disabled = false;
-				btn.innerHTML = `
-					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-					دریافت آی‌پی از مخزن
-				`;
-			} catch (err) {
-				showToast('خطا در دریافت لیست از مخزن — از ورود دستی استفاده کنید', 'error');
-				btn.disabled = true;
-				btn.innerHTML = 'خطا در ارتباط با مخزن';
-				document.getElementById('operator-select').innerHTML = '<option value="">در دسترس نیست</option>';
-				toggleAccordion('manual');
+				if (uri.toLowerCase().startsWith('vmess://')) {
+					const b64 = uri.slice(8).replace(/-/g, '+').replace(/_/g, '/');
+					const raw = atob(b64 + '='.repeat((4 - (b64.length % 4)) % 4));
+					const cfg = JSON.parse(raw);
+					return extractSNI(cfg.sni || cfg.host || cfg.add || '');
+				}
+				const url = new URL(uri);
+				const q = new URLSearchParams(url.search);
+				const cand = q.get('sni') || q.get('peer') || q.get('host') || url.hostname || '';
+				return extractSNI(cand);
+			} catch (e) {
+				return '';
 			}
 		}
+
+		function populateOperatorSelect(data) {
+			const select = document.getElementById('operator-select');
+			select.innerHTML = '<option value="all">همه اپراتورها (توصیه شده)</option>';
+			const priority = ['MCI', 'MTN', 'RTL', 'MKH', 'SHT', 'AST', 'PRS', 'HWB', 'RSP', 'AFN', 'SBN', 'MBT', 'ZTL'];
+			const keys = Object.keys(data);
+			keys.sort((a, b) => {
+				const ia = priority.indexOf(a);
+				const ib = priority.indexOf(b);
+				if (ia !== -1 && ib !== -1) return ia - ib;
+				if (ia !== -1) return -1;
+				if (ib !== -1) return 1;
+				return a.localeCompare(b);
+			});
+
+			keys.forEach(op => {
+				const option = document.createElement('option');
+				option.value = op;
+				const label = OPERATOR_NAMES[op] || op;
+				const count = data[op] ? data[op].length : 0;
+				option.textContent = `${label} (${count})`;
+				select.appendChild(option);
+			});
+
+			const btn = document.getElementById('btn-fetch');
+			btn.disabled = false;
+			btn.innerHTML = `
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+				دریافت آی‌پی از مخزن
+			`;
+		}
+
+		// Offline Cloudflare Random CIDR Sampler (100% Offline & Uncensored)
+		function generateOfflineIps() {
+			if (scanInProgress) return;
+			const subnet = document.getElementById('cf-subnet-select').value;
+			let count = parseInt(document.getElementById('offline-ip-count').value, 10);
+			if (isNaN(count) || count < 1) count = 20;
+			count = Math.min(count, MAX_UI_IPS);
+			document.getElementById('offline-ip-count').value = count;
+
+			const targetCidrs = subnet === 'all' ? CLOUDFLARE_CIDRS : [subnet];
+			const blocks = [];
+			let totalAddresses = 0;
+
+			targetCidrs.forEach(cidr => {
+				const [ip, maskPart] = cidr.split('/');
+				const mask = parseInt(maskPart, 10);
+				const start = ipToLong(ip);
+				if (start === null || isNaN(mask)) return;
+				const size = Math.pow(2, 32 - mask);
+				blocks.push({ start, size });
+				totalAddresses += size;
+			});
+
+			if (blocks.length === 0 || totalAddresses === 0) {
+				showToast('خطا در محاسبه رنج‌های کلودفلر', 'error');
+				return;
+			}
+
+			const sampled = new Set();
+			const maxAttempts = count * 60;
+			let attempts = 0;
+
+			while (sampled.size < count && attempts < maxAttempts) {
+				attempts++;
+				let r = Math.floor(Math.random() * totalAddresses);
+				let chosenBlock = blocks[0];
+				for (const b of blocks) {
+					if (r < b.size) {
+						chosenBlock = b;
+						break;
+					}
+					r -= b.size;
+				}
+
+				let offset = 0;
+				if (chosenBlock.size >= 4) {
+					offset = Math.floor(Math.random() * (chosenBlock.size - 2)) + 1;
+				} else {
+					offset = Math.floor(Math.random() * chosenBlock.size);
+				}
+
+				const ipLong = (chosenBlock.start + offset) >>> 0;
+				sampled.add(longToIp(ipLong));
+			}
+
+			const selectedIps = Array.from(sampled);
+			setupScannerUI(selectedIps, `${selectedIps.length} آی‌پی تصادفی کلودفلر (آفلاین) بارگذاری شد.`);
+		}
+
+		async function loadIpsFromRepo() {
+			const btn = document.getElementById('btn-fetch');
+			let loaded = false;
+
+			// Try online mirrors in sequence
+			for (const source of ONLINE_SOURCES) {
+				try {
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 6000);
+					const response = await fetch(source.url + '?t=' + Date.now(), { 
+						cache: 'no-store',
+						signal: controller.signal 
+					});
+					clearTimeout(timeoutId);
+					if (!response.ok) continue;
+					const data = await response.json();
+					if (data && Array.isArray(data.ipv4) && data.ipv4.length > 0) {
+						cachedIpsData = {};
+						data.ipv4.forEach(item => {
+							const op = item.operator;
+							const ip = item.ip;
+							if (op && ip && ipToLong(ip) !== null) {
+								if (!cachedIpsData[op]) cachedIpsData[op] = [];
+								if (!cachedIpsData[op].includes(ip)) cachedIpsData[op].push(ip);
+							}
+						});
+						if (Object.keys(cachedIpsData).length > 0) {
+							loaded = true;
+							break;
+						}
+					}
+				} catch (e) {
+					// Fall through to next mirror
+				}
+			}
+
+			// If online mirrors failed or blocked, fall back to built-in offline dataset seamlessly
+			if (!loaded || Object.keys(cachedIpsData).length === 0) {
+				cachedIpsData = JSON.parse(JSON.stringify(BUILTIN_OPERATOR_IPS));
+				console.log('Online mirrors unreachable; loaded built-in operator database.');
+			}
+
+			populateOperatorSelect(cachedIpsData);
+		}
 		document.addEventListener('DOMContentLoaded', loadIpsFromRepo);
+		document.addEventListener('DOMContentLoaded', updateNotificationUI);
 
 		function buildPortOptions() {
 			document.getElementById('port-options').innerHTML = PORTS.map(p => `
@@ -432,6 +720,18 @@
 			const ok = /^(vless|vmess|trojan):\/\//i.test(raw);
 			badge.innerText = ok ? (xrayAvailable ? 'آماده بررسی' : 'Xray نصب نیست') : 'کانفیگ نامعتبر';
 			badge.className = ok && xrayAvailable ? 'text-[10px] font-bold text-green-500' : 'text-[10px] font-bold text-amber-500';
+
+			if (ok) {
+				const sniInput = document.getElementById('sni-input');
+				if (!sniInput.value.trim()) {
+					const detected = extractSniFromConfig(raw);
+					if (detected) {
+						sniInput.value = detected;
+						showToast('دامنه SNI خودکار از کانفیگ استخراج شد: ' + detected);
+					}
+				}
+			}
+
 			const deep = document.getElementById('deep-test');
 			deep.disabled = !(ok && coreCapabilities.speed);
 			if (deep.disabled) deep.checked = false;
@@ -773,11 +1073,14 @@
 
 		async function startScan() {
 			if (scanInProgress || fetchedIPs.length === 0) return;
-			const targetSni = extractSNI(document.getElementById('sni-input').value);
+			let targetSni = extractSNI(document.getElementById('sni-input').value);
 			if (!targetSni) {
-				showToast('آدرس پنل یا ورکر (SNI) را وارد کنید!', 'error');
-				document.getElementById('sni-input').focus();
-				return;
+				const cfg = document.getElementById('config-input').value.trim();
+				targetSni = extractSniFromConfig(cfg) || 'cloudflare.com';
+				if (!document.getElementById('sni-input').value.trim()) {
+					document.getElementById('sni-input').value = targetSni;
+					showToast(`استفاده از دامنه پیش‌فرض: ${targetSni}`);
+				}
 			}
 
 			scanInProgress = true;
@@ -790,6 +1093,10 @@
 			btn.disabled = true;
 			btn.classList.add('opacity-40', 'cursor-not-allowed');
 			btnCancel.classList.remove('hidden');
+
+			if (notificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
+				Notification.requestPermission().catch(() => {});
+			}
 
 			let wakeLock = null;
 			try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
@@ -880,10 +1187,16 @@
 				healthyCountEl.classList.remove('hidden');
 				document.getElementById('btn-copy').classList.remove('hidden');
 				
+				const healthyCount = healthyIPs.length;
 				showToast(signal.aborted
-					? `اسکن لغو شد — ${healthyIPs.length} آی‌پی سالم تا اینجا`
-					: `اسکن تمام شد — ${healthyIPs.length} آی‌پی سالم`,
+					? `اسکن لغو شد — ${healthyCount} آی‌پی سالم تا اینجا`
+					: `اسکن تمام شد — ${healthyCount} آی‌پی سالم`,
 					signal.aborted ? 'error' : 'success');
+
+				if (!signal.aborted) {
+					playSuccessChime();
+					sendDesktopNotification('⚡ اسکنر زئوس', `اسکن پایان یافت؛ ${healthyCount} آی‌پی تمیز پیدا شد!`);
+				}
 			} finally {
 				scanInProgress = false;
 				scanAbort = null;
