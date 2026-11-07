@@ -30,6 +30,7 @@ PROBE_TARGETS = (
     ('cp.cloudflare.com', '/generate_204'),
     ('www.google.com', '/generate_204'),
 )
+MAX_PROBE_TARGETS = 8
 
 # Not every exit can reach every host — Worker-based configs often refuse Cloudflare's
 # own speedtest — so try a few until one actually delivers bytes.
@@ -89,6 +90,58 @@ def _qs(url):
 def _valid_hostname(value):
     value = (value or '').strip()
     return bool(value and HOSTNAME_RE.fullmatch(value))
+
+
+def parse_probe_targets(targets=None):
+    """Validate HTTPS destinations that will be checked through the Xray tunnel."""
+    if targets is None:
+        targets = [f'https://{host}{path}' for host, path in PROBE_TARGETS]
+    if not isinstance(targets, list) or not targets:
+        raise ValueError('at least one HTTPS test destination is required')
+    if len(targets) > MAX_PROBE_TARGETS:
+        raise ValueError(f'no more than {MAX_PROBE_TARGETS} test destinations are allowed')
+
+    normalized = []
+    seen = set()
+    for item in targets:
+        raw = item.get('url') if isinstance(item, dict) else item
+        raw = str(raw or '').strip()
+        if not raw:
+            raise ValueError('empty test destination')
+        if '://' not in raw:
+            raw = 'https://' + raw
+        if len(raw) > 2048:
+            raise ValueError('test destination is too long')
+        try:
+            parsed = urllib.parse.urlsplit(raw)
+            port = parsed.port
+        except ValueError:
+            raise ValueError('invalid test destination URL')
+        if parsed.scheme.lower() != 'https' or not parsed.hostname:
+            raise ValueError('test destinations must use HTTPS and include a hostname')
+        if parsed.username is not None or parsed.password is not None or parsed.fragment:
+            raise ValueError('credentials and fragments are not allowed in test destinations')
+        if port not in (None, 443):
+            raise ValueError('test destinations must use port 443')
+        try:
+            host = parsed.hostname.encode('idna').decode('ascii').lower()
+        except UnicodeError:
+            raise ValueError('invalid test destination hostname')
+        if not _valid_hostname(host):
+            raise ValueError('invalid test destination hostname')
+
+        path = urllib.parse.quote(parsed.path or '/', safe="/%:@!$&'()*+,;=-._~")
+        query = urllib.parse.quote(parsed.query, safe="=&?/:@!$'()*+,;%-._~")
+        request_path = path + (('?' + query) if query else '')
+        url = f'https://{host}{request_path}'
+        if url in seen:
+            continue
+        seen.add(url)
+        normalized.append({'url': url, 'host': host, 'path': request_path})
+
+    if not normalized:
+        raise ValueError('at least one unique HTTPS test destination is required')
+    return normalized
 
 
 def _validate_spec(spec):
@@ -445,26 +498,40 @@ def _measure_speed(socks_port, timeout):
     return None
 
 
-def verify(binary, spec, ip, socks_port, port=None, timeout=8.0, want_speed=False):
-    """Bring the tunnel up for one IP and prove traffic flows. Never raises."""
+def verify(binary, spec, ip, socks_port, port=None, timeout=8.0, want_speed=False,
+           probe_targets=None):
+    """Check selected HTTPS destinations through one Xray tunnel. Never raises."""
     started = time.monotonic()
     try:
+        targets = parse_probe_targets(probe_targets)
         with XrayTunnel(binary, spec, ip, socks_port, port):
             handshake_ms = int((time.monotonic() - started) * 1000)
-            status = None
-            for probe_host, probe_path in PROBE_TARGETS:
+            target_results = []
+            for target in targets:
+                probe_started = time.monotonic()
                 try:
-                    candidate_status, _, _ = _https_get(
-                        socks_port, probe_host, probe_path, timeout)
-                except Exception:
-                    continue
-                if candidate_status == PROBE_EXPECT or 200 <= candidate_status < 400:
-                    status = candidate_status
-                    break
-            if status is None:
-                return {'ok': False, 'error': 'probe destinations unreachable'}
+                    status, _, _ = _https_get(socks_port, target['host'], target['path'], timeout)
+                    target_results.append({
+                        'url': target['url'], 'host': target['host'],
+                        'ok': 200 <= status < 400, 'status': status,
+                        'latency': int((time.monotonic() - probe_started) * 1000),
+                    })
+                except Exception as exc:
+                    target_results.append({
+                        'url': target['url'], 'host': target['host'], 'ok': False,
+                        'status': None, 'latency': int((time.monotonic() - probe_started) * 1000),
+                        'error': _reason(exc),
+                    })
 
-            result = {'ok': True, 'latency': handshake_ms, 'status': status, 'speed': None}
+            passed = sum(1 for target in target_results if target['ok'])
+            result = {
+                'ok': passed > 0, 'latency': handshake_ms,
+                'status': next((t['status'] for t in target_results if t['ok']), None),
+                'speed': None, 'targets_ok': passed,
+                'targets_total': len(target_results), 'targets': target_results,
+            }
+            if not passed:
+                result['error'] = 'no test destination reachable'
             if want_speed:
                 result['speed'] = _measure_speed(socks_port, timeout)
             return result
