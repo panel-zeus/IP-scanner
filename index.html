@@ -65,7 +65,7 @@
 					<svg id="icon-notify-off" class="w-3.5 h-3.5 text-zinc-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4l1.405-1.405A2.032 2.032 0 006 12.158V11c0-.404.04-.8.115-1.183m2.23-2.23A5.992 5.992 0 0112 5.341V5a2 2 0 114 0v.341c1.385.69 2.473 1.83 2.885 3.245M18 12.158v2.001L19.414 15H10m-1 0v1a3 3 0 006 0v-1M3 3l18 18"/></svg>
 					<span id="text-notify" class="text-[10px] md:text-[11px]">اعلان: فعال</span>
 				</button>
-				<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.6 ZEUS</span>
+						<span class="px-2 py-0.5 bg-blue-900/30 text-blue-400 border border-blue-800/50 rounded-md text-[10px] font-bold" dir="ltr">v1.8 ZEUS</span>
 			</div>
 		</div>
 		
@@ -91,6 +91,17 @@
 							<span id="xray-badge" class="text-[10px] font-bold text-zinc-500">...</span>
 						</div>
 						<textarea id="config-input" rows="2" dir="ltr" spellcheck="false" oninput="onConfigInput()" class="w-full px-3 py-2.5 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-mono text-left text-zinc-100 transition resize-y leading-relaxed" placeholder="vless://... یا vmess://..."></textarea>
+					</div>
+
+					<div class="shrink-0">
+						<div class="flex items-center justify-between mb-1.5">
+							<label for="xray-target-input" class="block text-xs font-bold text-zinc-300">مقصدهای تست واقعی از داخل تونل</label>
+							<span class="text-[10px] text-zinc-500">HTTPS</span>
+						</div>
+						<textarea id="xray-target-input" rows="3" dir="ltr" spellcheck="false" class="w-full px-3 py-2 bg-amoled-input border border-amoled-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-[10px] font-mono text-left text-zinc-100 transition resize-y leading-relaxed" placeholder="https://www.gstatic.com/generate_204&#10;https://cp.cloudflare.com/generate_204&#10;https://www.google.com/generate_204">https://www.gstatic.com/generate_204
+https://cp.cloudflare.com/generate_204
+https://www.google.com/generate_204</textarea>
+						<p class="mt-1 text-[9px] text-zinc-500">هر خط یک مقصد HTTPS؛ حداکثر ۸ مقصد. برای چند مقصد، تست روی ۵ IP برتر اجرا می‌شود.</p>
 					</div>
 					
 					<div class="space-y-2 shrink-0">
@@ -263,6 +274,44 @@
 					</div>
 				</div>
 
+				<details id="result-controls" open class="border border-amoled-border rounded-md bg-amoled-input/70 shrink-0">
+					<summary class="px-3 py-2 text-[11px] font-bold text-zinc-300 cursor-pointer select-none">فیلتر نتایج و وزن امتیاز</summary>
+					<div class="px-3 pb-3 border-t border-amoled-border space-y-3">
+						<div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
+							<label class="text-[10px] text-zinc-400">حداکثر پینگ (ms)
+								<input id="max-ping-filter" type="number" min="0" max="30000" value="30000" oninput="applyResultFilters()" class="mt-1 w-full px-2 py-1.5 bg-amoled-card border border-amoled-border rounded text-xs font-mono text-zinc-100" dir="ltr">
+							</label>
+							<label class="text-[10px] text-zinc-400">حداکثر لاست (%)
+								<input id="max-loss-filter" type="number" min="0" max="100" value="100" oninput="applyResultFilters()" class="mt-1 w-full px-2 py-1.5 bg-amoled-card border border-amoled-border rounded text-xs font-mono text-zinc-100" dir="ltr">
+							</label>
+							<label class="text-[10px] text-zinc-400">حداکثر نوسان (ms)
+								<input id="max-stability-filter" type="number" min="0" max="10000" value="10000" oninput="applyResultFilters()" class="mt-1 w-full px-2 py-1.5 bg-amoled-card border border-amoled-border rounded text-xs font-mono text-zinc-100" dir="ltr">
+							</label>
+							<div class="flex items-end">
+								<button type="button" id="reset-result-controls" onclick="resetResultControls()" class="w-full px-2 py-1.5 border border-zinc-700 rounded text-[10px] text-zinc-300 hover:bg-zinc-800">بازنشانی</button>
+							</div>
+						</div>
+						<div class="border-t border-amoled-border pt-3">
+							<div class="flex items-center justify-between gap-2 mb-2">
+								<span class="text-[10px] text-zinc-400">اهمیت هر معیار در امتیاز نهایی</span>
+								<span id="weight-summary" class="text-[10px] font-mono text-blue-300" dir="ltr">60 / 30 / 10</span>
+							</div>
+							<div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2">
+								<label class="text-[10px] text-zinc-400">لاست <span id="weight-loss-value" class="font-mono text-amber-300">60</span>%
+									<input id="weight-loss" type="range" min="0" max="100" value="60" oninput="onScoreWeightChange()" class="w-full accent-amber-500">
+								</label>
+								<label class="text-[10px] text-zinc-400">پینگ <span id="weight-ping-value" class="font-mono text-blue-300">30</span>%
+									<input id="weight-ping" type="range" min="0" max="100" value="30" oninput="onScoreWeightChange()" class="w-full accent-blue-500">
+								</label>
+								<label class="text-[10px] text-zinc-400">پایداری <span id="weight-stability-value" class="font-mono text-green-300">10</span>%
+									<input id="weight-stability" type="range" min="0" max="100" value="10" oninput="onScoreWeightChange()" class="w-full accent-green-500">
+								</label>
+							</div>
+							<p id="weight-help" class="mt-1 text-[9px] text-zinc-500">امتیازها با نسبت وزن‌ها محاسبه می‌شوند. برای فیلتر پایداری، هر IP باید دست‌کم دو نمونه‌ی موفق داشته باشد.</p>
+						</div>
+					</div>
+				</details>
+
 				<div class="flex flex-col border border-amoled-border bg-amoled-input rounded-md overflow-hidden flex-1 relative">
 					<div class="grid grid-cols-7 md:grid-cols-12 gap-x-1 gap-y-2 md:gap-y-0 p-2 border-b border-amoled-border bg-zinc-900/40 text-[9px] md:text-[10px] font-bold text-zinc-400 text-center shrink-0 items-center">
 						<div class="col-span-1">ردیف</div>
@@ -290,10 +339,15 @@
 				<div id="scan-progress-bar" class="bg-blue-500 h-1.5 rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(59,130,246,0.6)]" style="width: 0%"></div>
 			</div>
 			<div id="healthy-ip-count" class="text-green-500 font-bold text-[13px] text-center hidden"></div>
-			<button type="button" id="btn-copy" onclick="copyResults()" class="w-full py-2.5 bg-transparent border-2 border-amber-600 text-amber-500 hover:bg-amber-900/40 hover:text-amber-400 font-bold rounded-md text-xs transition shadow-sm flex items-center justify-center gap-2 hidden">
+			<div id="export-actions" class="hidden grid grid-cols-2 md:grid-cols-4 gap-2">
+				<button type="button" id="btn-export-csv" onclick="exportResults('csv')" class="py-2 bg-transparent border border-emerald-700 text-emerald-400 hover:bg-emerald-900/30 font-bold rounded-md text-[11px] transition">دانلود CSV</button>
+				<button type="button" id="btn-export-json" onclick="exportResults('json')" class="py-2 bg-transparent border border-sky-700 text-sky-400 hover:bg-sky-900/30 font-bold rounded-md text-[11px] transition">دانلود JSON</button>
+				<button type="button" id="btn-export-configs" onclick="exportConfigLinks()" class="py-2 bg-transparent border border-purple-700 text-purple-400 hover:bg-purple-900/30 disabled:opacity-40 disabled:cursor-not-allowed font-bold rounded-md text-[11px] transition">دریافت لینک کانفیگ</button>
+				<button type="button" id="btn-copy" onclick="copyResults()" class="py-2 bg-transparent border-2 border-amber-600 text-amber-500 hover:bg-amber-900/40 hover:text-amber-400 font-bold rounded-md text-[11px] transition shadow-sm flex items-center justify-center gap-2">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 				کپی آی‌پی‌های سالم
-			</button>
+				</button>
+			</div>
 		</div>
 	</div>
 	
@@ -403,6 +457,7 @@
 		let fetchedIPs = [];
 		let healthyIPs = [];
 		let failedStates = new Map();
+		let hasScanResults = false;
 		let scanInProgress = false;
 		let scanAbort = null;
 		let activeScanIds = new Set();
@@ -694,6 +749,7 @@
 		}
 		document.addEventListener('DOMContentLoaded', loadIpsFromRepo);
 		document.addEventListener('DOMContentLoaded', updateNotificationUI);
+		document.addEventListener('DOMContentLoaded', onScoreWeightChange);
 
 		function buildPortOptions() {
 			document.getElementById('port-options').innerHTML = PORTS.map(p => `
@@ -707,6 +763,7 @@
 
 		function onConfigInput() {
 			const raw = document.getElementById('config-input').value.trim();
+			updateExportActions();
 			const badge = document.getElementById('xray-badge');
 			if (!raw) {
 				badge.innerText = xrayAvailable ? 'هسته Xray آماده' : 'Xray نصب نیست';
@@ -767,6 +824,21 @@
 			if (testing) return '<div class="col-span-1 md:col-span-2 flex items-center justify-center"><span class="px-1 py-0.5 text-[9px] bg-blue-900/30 text-blue-400 border border-blue-800 rounded font-bold">تست</span></div>';
 			const v = state && state.xray;
 			if (!v) return '<div class="col-span-1 md:col-span-2 text-center text-[10px] text-zinc-600">-</div>';
+			if (Array.isArray(v.targets) && v.targets.length) {
+				const passed = Number(v.targets_ok) || 0;
+				const total = Number(v.targets_total) || v.targets.length;
+				const badge = passed === total
+					? 'bg-green-900/30 text-green-400 border-green-800'
+					: passed > 0 ? 'bg-amber-900/30 text-amber-300 border-amber-800'
+						: 'bg-red-900/30 text-red-400 border-red-800';
+				const title = v.targets.map(t => `${t.url}: ${t.ok ? `HTTP ${t.status} (${t.latency}ms)` : (t.status ? `HTTP ${t.status}` : t.error || 'failed')}`).join('\n');
+				const chips = v.targets.map(t => {
+					const label = String(t.host || t.url || '').replace(/^www\./i, '').split('.')[0];
+					const color = t.ok ? 'text-green-400' : 'text-red-400';
+					return `<span class="${color}" title="${escapeHtml(t.url || '')}">${escapeHtml(label)} ${t.ok ? '✓' : '×'}</span>`;
+				}).join(' ');
+				return `<div class="col-span-1 md:col-span-2 flex flex-col items-center justify-center gap-0.5" title="${escapeHtml(title)}"><span class="px-1.5 py-0.5 text-[9px] border rounded font-bold ${badge}" dir="ltr">${passed}/${total}</span><span class="text-[8px] leading-tight text-center" dir="ltr">${chips}</span></div>`;
+			}
 			if (v.ok) return `<div class="col-span-1 md:col-span-2 flex items-center justify-center" title="${v.latency}ms"><span class="px-1.5 py-0.5 text-[9px] bg-green-900/30 text-green-400 border border-green-800 rounded font-bold">پاس</span></div>`;
 			return `<div class="col-span-1 md:col-span-2 flex items-center justify-center" title="${escapeHtml(v.error || '')}"><span class="px-1.5 py-0.5 text-[9px] bg-red-900/30 text-red-400 border border-red-800 rounded font-bold">رد</span></div>`;
 		}
@@ -803,10 +875,11 @@
 
 			const cf = state.cloudflare ? '<span class="bg-orange-900/30 text-orange-400 border border-orange-800/50 rounded-sm px-1.5 py-0.5 text-[8px] font-bold leading-none">CF</span>' : '<span class="text-zinc-600">-</span>';
 			const shownSpeed = state.realSpeed || state.speed;
+			const measuredStdev = Number.isFinite(state.stdev) ? state.stdev : null;
 			const stability = shownSpeed
 				? (shownSpeed >= 1024 ? (shownSpeed / 1024).toFixed(1) + ' MB/s' : shownSpeed + ' KB/s')
-				: (speedModeActive ? '—' : '±' + state.stdev + 'ms');
-			const stabColor = shownSpeed ? (state.realSpeed ? 'text-green-500' : 'text-blue-400') : stdevColor(state.stdev);
+				: (speedModeActive || measuredStdev === null ? '—' : '±' + measuredStdev + 'ms');
+			const stabColor = shownSpeed ? (state.realSpeed ? 'text-green-500' : 'text-blue-400') : (measuredStdev === null ? 'text-zinc-500' : stdevColor(measuredStdev));
 			const sc = scoreColor(state.score);
 
 			return `
@@ -834,20 +907,22 @@
 		function updateStats() {
 			document.getElementById('stat-total').textContent = fetchedIPs.length;
 			document.getElementById('stat-healthy').textContent = healthyIPs.length;
-			const best = healthyIPs.reduce((a, b) => (!a || b.score > a.score ? b : a), null);
+			const ranked = hasScanResults ? filteredHealthyIPs() : healthyIPs;
+			const best = ranked.reduce((a, b) => (!a || b.score > a.score ? b : a), null);
 			document.getElementById('stat-best').textContent = best ? best.score : '—';
 		}
 
 		function setupScannerUI(ipList, successMessage) {
 			fetchedIPs = ipList;
 			healthyIPs = [];
+			hasScanResults = false;
 			document.getElementById('advanced-options-section').classList.remove('opacity-50', 'pointer-events-none');
 			document.getElementById('scan-buttons-section').classList.remove('opacity-50', 'pointer-events-none');
 			document.getElementById('scan-table-section').classList.remove('opacity-50', 'pointer-events-none');
 			document.getElementById('scan-status-text').innerText = `آی‌پی برای اسکن: ${fetchedIPs.length} عدد`;
 			renderPendingRows();
 			updateStats();
-			document.getElementById('btn-copy').classList.add('hidden');
+			document.getElementById('export-actions').classList.add('hidden');
 			document.getElementById('scan-progress-container').classList.add('hidden');
 			document.getElementById('healthy-ip-count').classList.add('hidden');
 			showToast(successMessage);
@@ -958,7 +1033,7 @@
 			}).catch(() => {});
 		}
 
-		async function requestScan(batch, sni, opts, signal, scanId) {
+		async function requestScan(batch, sni, opts, signal, scanId, scoreWeights) {
 			const controller = new AbortController();
 			const onAbort = () => controller.abort();
 			signal.addEventListener('abort', onAbort);
@@ -969,7 +1044,7 @@
 				const res = await fetch('/api/scan', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ ips: batch, sni, scan_id: scanId, ...opts }),
+					body: JSON.stringify({ ips: batch, sni, scan_id: scanId, score_weights: scoreWeights, ...opts }),
 					signal: controller.signal
 				});
 				if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -987,10 +1062,16 @@
 
 		function renderFinalRows(container) {
 			let i = 0;
-			let html = healthyIPs
+			const visible = filteredHealthyIPs();
+			updateStats();
+			let html = visible
 				.map(item => `<div class="grid grid-cols-7 md:grid-cols-12 gap-x-1 gap-y-2 md:gap-y-0 items-center py-2 md:py-1.5 border-b border-amoled-border/50 text-zinc-400 hover:bg-zinc-800/40 transition cursor-pointer copyable-row" data-copy="${item.port === 443 ? item.ip : item.ip + ':' + item.port}">${rowHtml(i++, item.ip, item)}</div>`)
 				.join('');
+			if (!visible.length) {
+				html = '<div class="h-full min-h-20 flex items-center justify-center text-zinc-500 font-sans text-xs">هیچ IP سالمی با فیلترهای فعلی جور نیست.</div>';
+			}
 			container.innerHTML = html;
+			updateFilterSummary(visible.length);
 			
 			container.querySelectorAll('.copyable-row').forEach(row => {
 				row.addEventListener('click', () => {
@@ -1003,23 +1084,262 @@
 			});
 		}
 
+		function readNumber(id, fallback) {
+			const value = Number(document.getElementById(id).value);
+			return Number.isFinite(value) && value >= 0 ? value : fallback;
+		}
+
+		function getScoreWeights() {
+			return {
+				loss: readNumber('weight-loss', 60),
+				ping: readNumber('weight-ping', 30),
+				stability: readNumber('weight-stability', 10)
+			};
+		}
+
+		function normalizedScoreWeights(weights = getScoreWeights()) {
+			const total = weights.loss + weights.ping + weights.stability;
+			if (!total) return { loss: 0.6, ping: 0.3, stability: 0.1 };
+			return { loss: weights.loss / total, ping: weights.ping / total, stability: weights.stability / total };
+		}
+
+		function scoreCandidate(item, weights = normalizedScoreWeights()) {
+			if (!item.success) return 0;
+			const loss = Math.max(0, Math.min(100, Number(item.loss) || 0));
+			const ping = Math.max(0, Math.min(100, (Number(item.median) || 0) / 10));
+			const stability = Math.max(0, Math.min(100, (Number(item.stdev) || 0) / 2));
+			return Math.max(0, Math.min(100, Math.round(100 - (
+				weights.loss * loss + weights.ping * ping + weights.stability * stability
+			))));
+		}
+
+		function sortHealthyIPs() {
+			healthyIPs.sort((a, b) => {
+				const rank = x => {
+					if (!x.xray) return 1;
+					if (Number(x.xray.targets_total) > 0) {
+						if (!x.xray.targets_ok) return 0;
+						return 2 + x.xray.targets_ok / x.xray.targets_total;
+					}
+					return x.xray.ok ? 3 : 0;
+				};
+				const byRank = rank(b) - rank(a);
+				if (byRank) return byRank;
+				if (a.realSpeed && b.realSpeed) return b.realSpeed - a.realSpeed;
+				if (a.xray && b.xray && a.xray.ok && b.xray.ok) return a.xray.latency - b.xray.latency;
+				return b.score - a.score || a.median - b.median;
+			});
+		}
+
+		function applyScoreWeightsToResults() {
+			const weights = normalizedScoreWeights();
+			healthyIPs.forEach(item => { item.score = scoreCandidate(item, weights); });
+			sortHealthyIPs();
+			updateStats();
+			if (hasScanResults && !scanInProgress) renderFinalRows(document.getElementById('results-container'));
+		}
+
+		function onScoreWeightChange() {
+			const weights = getScoreWeights();
+			for (const key of ['loss', 'ping', 'stability']) {
+				document.getElementById(`weight-${key}-value`).textContent = Math.round(weights[key]);
+			}
+			const normalized = normalizedScoreWeights(weights);
+			document.getElementById('weight-summary').textContent =
+				`${Math.round(normalized.loss * 100)} / ${Math.round(normalized.ping * 100)} / ${Math.round(normalized.stability * 100)}`;
+			applyScoreWeightsToResults();
+		}
+
+		function filteredHealthyIPs() {
+			const maxPing = readNumber('max-ping-filter', 30000);
+			const maxLoss = readNumber('max-loss-filter', 100);
+			const maxStability = readNumber('max-stability-filter', 10000);
+			return healthyIPs.filter(item => {
+				if ((Number(item.median) || 0) > maxPing || (Number(item.loss) || 0) > maxLoss) return false;
+				if (maxStability < 10000 && (!Number.isFinite(item.stdev) || item.attempts < 2 || item.stdev > maxStability)) return false;
+				return true;
+			});
+		}
+
+		function updateFilterSummary(visibleCount = filteredHealthyIPs().length) {
+			const label = document.getElementById('healthy-ip-count');
+			if (!label.classList.contains('hidden')) {
+				label.textContent = `${visibleCount} از ${healthyIPs.length} آی‌پی سالم با فیلترهای فعلی جور است.`;
+			}
+		}
+
+		function applyResultFilters() {
+			if (hasScanResults && !scanInProgress) renderFinalRows(document.getElementById('results-container'));
+		}
+
+		function resetResultControls() {
+			if (scanInProgress) return;
+			document.getElementById('max-ping-filter').value = 30000;
+			document.getElementById('max-loss-filter').value = 100;
+			document.getElementById('max-stability-filter').value = 10000;
+			document.getElementById('weight-loss').value = 60;
+			document.getElementById('weight-ping').value = 30;
+			document.getElementById('weight-stability').value = 10;
+			onScoreWeightChange();
+			applyResultFilters();
+		}
+
+		function updateExportActions() {
+			const actions = document.getElementById('export-actions');
+			if (healthyIPs.length || hasScanResults) actions.classList.remove('hidden');
+			else actions.classList.add('hidden');
+			const config = document.getElementById('config-input').value.trim();
+			document.getElementById('btn-export-configs').disabled = !config || !/^(vless|vmess|trojan):\/\//i.test(config);
+		}
+
+		function filteredConfigLinks() {
+			const config = document.getElementById('config-input').value.trim();
+			if (!config) throw new Error('اول یک کانفیگ VLESS، VMess یا Trojan وارد کنید.');
+			return filteredHealthyIPs().map(item => ({ ...item, config_uri: buildConfigLink(config, item) }));
+		}
+
+		function base64ToUtf8(value) {
+			let normalized = value.replace(/\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
+			while (normalized.length % 4) normalized += '=';
+			const binary = atob(normalized);
+			const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+			return new TextDecoder().decode(bytes);
+		}
+
+		function utf8ToBase64(value) {
+			const bytes = new TextEncoder().encode(value);
+			let binary = '';
+			for (let i = 0; i < bytes.length; i += 0x8000) {
+				binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+			}
+			return btoa(binary);
+		}
+
+		function uriHostPort(ip, port) {
+			const host = ip.includes(':') && !ip.startsWith('[') ? `[${ip}]` : ip;
+			return `${host}:${Number(port) || 443}`;
+		}
+
+		function buildConfigLink(rawConfig, item) {
+			const config = rawConfig.trim();
+			if (/^vmess:\/\//i.test(config)) {
+				const body = config.slice(config.indexOf('//') + 2);
+				const hashAt = body.indexOf('#');
+				const payload = hashAt < 0 ? body : body.slice(0, hashAt);
+				const fragment = hashAt < 0 ? '' : body.slice(hashAt);
+				const vmess = JSON.parse(base64ToUtf8(payload));
+				if (!vmess || typeof vmess !== 'object' || !vmess.add) throw new Error('ساختار لینک VMess معتبر نیست.');
+				vmess.add = item.ip;
+				vmess.port = String(item.port || vmess.port || 443);
+				return `vmess://${utf8ToBase64(JSON.stringify(vmess))}${fragment}`;
+			}
+
+			const match = config.match(/^([a-z][a-z0-9+.-]*:\/\/)([^/?#]+)([\s\S]*)$/i);
+			if (!match || !/^(vless|trojan):$/i.test(match[1].slice(0, -2))) throw new Error('فقط لینک VLESS، VMess یا Trojan پشتیبانی می‌شود.');
+			const at = match[2].lastIndexOf('@');
+			if (at < 1) throw new Error('بخش شناسه/رمز لینک پیدا نشد.');
+			const userInfo = match[2].slice(0, at + 1);
+			return `${match[1]}${userInfo}${uriHostPort(item.ip, item.port)}${match[3]}`;
+		}
+
+		function downloadFile(content, mimeType, filename) {
+			const blob = new Blob([content], { type: mimeType });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = filename;
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		}
+
+		function csvField(value) {
+			if (value === null || value === undefined) return '""';
+			if (typeof value === 'object') value = JSON.stringify(value);
+			return `"${String(value).replace(/"/g, '""')}"`;
+		}
+
+		function exportResults(format) {
+			const results = filteredHealthyIPs();
+			if (!results.length) {
+				showToast('نتیجه‌ای برای خروجی با فیلترهای فعلی وجود ندارد.', 'error');
+				return;
+			}
+			const config = document.getElementById('config-input').value.trim();
+			const rows = results.map(item => {
+				let configUri = null;
+				if (config) {
+					try { configUri = buildConfigLink(config, item); } catch (e) {}
+				}
+				return {
+					ip: item.ip, port: item.port, score: item.score, median_ping_ms: item.median,
+					loss_percent: item.loss, stability_stdev_ms: item.stdev,
+					attempts: item.attempts, tcp_ms: item.tcp, tls_ms: item.tls,
+					xray_ok: item.xray ? item.xray.ok : null,
+					xray_latency_ms: item.xray && item.xray.ok ? item.xray.latency : null,
+					xray_targets_ok: item.xray ? item.xray.targets_ok : null,
+					xray_targets_total: item.xray ? item.xray.targets_total : null,
+					xray_targets: item.xray ? item.xray.targets || [] : [],
+					speed_kbps: item.realSpeed || item.speed || null,
+					config_uri: configUri
+				};
+			});
+			const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+			if (format === 'json') {
+				const payload = {
+					created_at: new Date().toISOString(),
+					sni: document.getElementById('sni-input').value.trim() || null,
+					score_weights_percent: Object.fromEntries(Object.entries(normalizedScoreWeights()).map(([key, value]) => [key, Math.round(value * 100)])),
+					filters: {
+						max_ping_ms: readNumber('max-ping-filter', 30000),
+						max_loss_percent: readNumber('max-loss-filter', 100),
+						max_stability_stdev_ms: readNumber('max-stability-filter', 10000)
+					},
+					results: rows
+				};
+				downloadFile(JSON.stringify(payload, null, 2), 'application/json;charset=utf-8', `zeus-results-${stamp}.json`);
+			} else {
+				const columns = Object.keys(rows[0]);
+				const csv = '\uFEFF' + [columns.map(csvField).join(','), ...rows.map(row => columns.map(key => csvField(row[key])).join(','))].join('\r\n');
+				downloadFile(csv, 'text/csv;charset=utf-8', `zeus-results-${stamp}.csv`);
+			}
+			showToast(`${results.length} ردیف خروجی گرفته شد.`);
+		}
+
+		function exportConfigLinks() {
+			try {
+				const rows = filteredConfigLinks();
+				if (!rows.length) throw new Error('نتیجه‌ای برای ساخت لینک وجود ندارد.');
+				downloadFile(rows.map(item => item.config_uri).join('\r\n') + '\r\n', 'text/plain;charset=utf-8', `zeus-config-links-${Date.now()}.txt`);
+				showToast(`${rows.length} لینک با حفظ SNI و Host ساخته شد.`);
+			} catch (error) {
+				showToast(error.message || 'ساخت لینک کانفیگ ناموفق بود.', 'error');
+			}
+		}
+
 		function cancelScan() {
 			if (scanAbort) scanAbort.abort();
 			activeScanIds.forEach(cancelServerScan);
 		}
 
-		async function runXrayPass(container, wantSpeed, signal) {
+		async function runXrayPass(container, wantSpeed, signal, probeTargets) {
 			const config = document.getElementById('config-input').value.trim();
 			if (!config || !xrayAvailable || healthyIPs.length === 0) return;
 
-			// اگر تست سرعت روشن باشد، فقط ۵ تای اول، در غیر این صورت تمامی آی‌پی‌های سالم تست می‌شوند
-			const limit = wantSpeed ? XRAY_TOP_N : healthyIPs.length;
-			const top = healthyIPs.slice(0, limit);
+			probeTargets = probeTargets || readXrayTargets();
+			const candidates = filteredHealthyIPs();
+			if (!candidates.length) {
+				showToast('هیچ IPای با فیلترهای فعلی برای تست Xray باقی نمانده.', 'error');
+				return;
+			}
+			const limit = (wantSpeed || probeTargets.length > 1) ? XRAY_TOP_N : candidates.length;
+			const top = candidates.slice(0, limit);
 			
 			top.forEach((item, i) => {
 				if (container.children[i]) container.children[i].innerHTML = rowHtml(i, item.ip, item, 'testing');
 			});
-			showToast(`تست واقعی با هسته Xray روی ${top.length} آی‌پی برتر...`);
+			showToast(`تست ${probeTargets.length} مقصد واقعی با Xray روی ${top.length} آی‌پی برتر...`);
 
 			let data = null;
 			try {
@@ -1029,6 +1349,7 @@
 					body: JSON.stringify({
 						config,
 						candidates: top.map(t => ({ ip: t.ip, port: t.port })),
+						targets: probeTargets,
 						speed: !!wantSpeed
 					}),
 					signal
@@ -1053,26 +1374,48 @@
 				if (v && v.ok && v.speed) item.realSpeed = v.speed;
 			});
 
-			healthyIPs.sort((a, b) => {
-				const rank = x => (x.xray && x.xray.ok ? 2 : x.xray ? 0 : 1);
-				const byRank = rank(b) - rank(a);
-				if (byRank) return byRank;
-				if (a.realSpeed && b.realSpeed) return b.realSpeed - a.realSpeed;
-				if (a.xray && b.xray && a.xray.ok && b.xray.ok) return a.xray.latency - b.xray.latency;
-				return b.score - a.score || a.median - b.median;
-			});
+			sortHealthyIPs();
 			renderFinalRows(container);
 
-			const passed = healthyIPs.filter(x => x.xray && x.xray.ok).length;
+			const fullyPassed = healthyIPs.filter(x => x.xray && x.xray.targets_total && x.xray.targets_ok === x.xray.targets_total).length;
+			const partlyPassed = healthyIPs.filter(x => x.xray && x.xray.targets_ok > 0 && x.xray.targets_ok < x.xray.targets_total).length;
 			if (verdicts.size) {
-				showToast(passed
-					? `${passed} آی‌پی (از مجموع ${top.length} تست شده) پاس شدند`
-					: 'هیچ آی‌پی‌ای با این کانفیگ کار نکرد', passed ? 'success' : 'error');
+				showToast(
+					`${fullyPassed} IP همه‌ی مقصدها را پاس کردند${partlyPassed ? `؛ ${partlyPassed} مورد قبولیِ نسبی داشتند` : ''} (از ${top.length} تست‌شده)`,
+					fullyPassed || partlyPassed ? 'success' : 'error'
+				);
 			}
+		}
+
+		function readXrayTargets() {
+			const lines = document.getElementById('xray-target-input').value
+				.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+			if (!lines.length) throw new Error('حداقل یک مقصد HTTPS برای تست وارد کنید.');
+			if (lines.length > 8) throw new Error('حداکثر ۸ مقصد تست می‌توانید وارد کنید.');
+			const targets = [];
+			const seen = new Set();
+			for (const line of lines) {
+				const value = /^[a-z][a-z0-9+.-]*:\/\//i.test(line) ? line : `https://${line}`;
+				let parsed;
+				try { parsed = new URL(value); } catch (error) { throw new Error(`آدرس تست معتبر نیست: ${line}`); }
+				if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password || parsed.hash || (parsed.port && parsed.port !== '443')) {
+					throw new Error(`فقط آدرس HTTPS روی پورت ۴۴۳ مجاز است: ${line}`);
+				}
+				if (!seen.has(parsed.href)) {
+					seen.add(parsed.href);
+					targets.push(parsed.href);
+				}
+			}
+			return targets;
 		}
 
 		async function startScan() {
 			if (scanInProgress || fetchedIPs.length === 0) return;
+			let probeTargets = null;
+			if (document.getElementById('config-input').value.trim() && xrayAvailable) {
+				try { probeTargets = readXrayTargets(); }
+				catch (error) { showToast(error.message, 'error'); return; }
+			}
 			let targetSni = extractSNI(document.getElementById('sni-input').value);
 			if (!targetSni) {
 				const cfg = document.getElementById('config-input').value.trim();
@@ -1084,6 +1427,7 @@
 			}
 
 			scanInProgress = true;
+			hasScanResults = false;
 			scanAbort = new AbortController();
 			const signal = scanAbort.signal;
 			const btn = document.getElementById('btn-scan');
@@ -1102,13 +1446,16 @@
 			try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
 
 			const opts = scanOptions();
+			const scoreWeights = getScoreWeights();
+			for (const id of ['weight-loss', 'weight-ping', 'weight-stability']) document.getElementById(id).disabled = true;
+			document.getElementById('reset-result-controls').disabled = true;
 			speedModeActive = opts.deep;
 			const progContainer = document.getElementById('scan-progress-container');
 			const progBar = document.getElementById('scan-progress-bar');
 			const resultsContainer = document.getElementById('results-container');
 			
 			document.getElementById('healthy-ip-count').classList.add('hidden');
-			document.getElementById('btn-copy').classList.add('hidden');
+			document.getElementById('export-actions').classList.add('hidden');
 			progContainer.classList.remove('hidden');
 			progBar.style.width = '0%';
 			healthyIPs = [];
@@ -1137,7 +1484,7 @@
 				for (let attempt = 0; attempt < 2 && data === null && !signal.aborted; attempt++) {
 					if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
 					try {
-						data = await requestScan(batch, targetSni, opts, signal, `${runId}-${offset}-${attempt}`);
+						data = await requestScan(batch, targetSni, opts, signal, `${runId}-${offset}-${attempt}`, scoreWeights);
 					} catch (err) {
 						data = null;
 						if (signal.aborted || err.isTimeout || err.name === 'AbortError') break;
@@ -1176,16 +1523,18 @@
 					await new Promise(r => setTimeout(r, 400));
 				}
 
-				healthyIPs.sort((a, b) => b.score - a.score || a.median - b.median);
+				sortHealthyIPs();
 				renderFinalRows(resultsContainer);
 				updateStats();
 
-				if (!signal.aborted) await runXrayPass(resultsContainer, opts.deep, signal);
+				if (!signal.aborted) await runXrayPass(resultsContainer, opts.deep, signal, probeTargets);
 
+				hasScanResults = true;
 				const healthyCountEl = document.getElementById('healthy-ip-count');
-				healthyCountEl.innerText = `${healthyIPs.length} آی‌پی کاملا سالم پیدا شد.`;
+				healthyCountEl.innerText = `${healthyIPs.length} آی‌پی سالم پیدا شد.`;
 				healthyCountEl.classList.remove('hidden');
-				document.getElementById('btn-copy').classList.remove('hidden');
+				updateExportActions();
+				renderFinalRows(resultsContainer);
 				
 				const healthyCount = healthyIPs.length;
 				showToast(signal.aborted
@@ -1200,6 +1549,8 @@
 			} finally {
 				scanInProgress = false;
 				scanAbort = null;
+				for (const id of ['weight-loss', 'weight-ping', 'weight-stability']) document.getElementById(id).disabled = false;
+				document.getElementById('reset-result-controls').disabled = false;
 				// بازگردانی رنگ دکمه اسکن و مخفی کردن دکمه لغو
 				btn.disabled = false;
 				btn.classList.remove('opacity-40', 'cursor-not-allowed');
@@ -1209,13 +1560,14 @@
 		}
 
 		function copyResults() {
-			if(healthyIPs.length === 0) {
-				showToast('آی‌پی سالمی برای کپی وجود ندارد!', 'error');
+			const visible = filteredHealthyIPs();
+			if(visible.length === 0) {
+				showToast('آی‌پی سالمی با فیلترهای فعلی وجود ندارد!', 'error');
 				return;
 			}
-			const ipsToCopy = healthyIPs.map(h => h.port === 443 ? h.ip : `${h.ip}:${h.port}`).join('\n');
+			const ipsToCopy = visible.map(h => h.port === 443 ? h.ip : `${h.ip}:${h.port}`).join('\n');
 			navigator.clipboard.writeText(ipsToCopy).then(() => {
-				showToast(`${healthyIPs.length} آی‌پی با موفقیت کپی شد.`);
+				showToast(`${visible.length} آی‌پی با موفقیت کپی شد.`);
 			}).catch(() => {
 			    showToast('کپی خودکار ممکن نشد — دستی کپی کنید', 'error');
 			});

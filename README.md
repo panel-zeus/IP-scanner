@@ -10,11 +10,14 @@ Zeus Scanner is a modern, high-performance Cloudflare IP scanner integrated with
 
 This scanner tests Cloudflare edge IPs using TLS/SNI, evaluates the best candidates with an actual Xray core using a provided configuration, and performs a real speed test from within the tunnel.
 
-### 🌟 New in v1.6
+### 🌟 New in v1.8
 - **Offline Cloudflare Random CIDR Sampler:** Generate random valid Cloudflare IPs directly from official Cloudflare subnets (over 1.5 million IPs) completely offline, with zero external network dependencies.
 - **Smart Optional SNI / Host:** Entering a panel or worker address is now fully optional. If a config is provided, SNI is extracted automatically; otherwise, it defaults to `cloudflare.com` for instant scanning.
 - **Resilient Multi-Mirror Repositories:** Online operator IP lists backed by fast jsDelivr CDN mirrors and a built-in offline Iranian operator database.
 - **Audio & Desktop Web Notifications:** Receive an audio chime and browser desktop notification as soon as the scan finishes, even when running long scans in the background.
+- **Weighted Scoring & Filters:** Filter healthy results by maximum ping, packet loss, and jitter, then adjust the relative weight of each metric in the score.
+- **CSV / JSON & Ready-to-Import Links:** Export filtered results or generate VLESS, VMess, and Trojan links for the matching IPs while preserving the original SNI and Host settings.
+- **Multi-Destination Xray Checks:** Enter up to eight HTTPS destinations and see which ones each tested IP can actually reach through the user's tunnel, including response status and latency.
 
 ---
 
@@ -67,13 +70,17 @@ For large lists (up to 1000 IPs), a rapid initial scan is performed. Only the be
 Tests are repeated multiple times. Median ping, jitter, and packet loss are calculated independently, alongside TCP and TLS handshake durations.
 
 ### 5. Real Xray Testing
-For the top-ranking IPs, a real tunnel is established using the provided configuration, and a `generate_204` request is made from within the tunnel. A valid response confirms that the IP successfully routes the configuration.
+For top-ranking IPs, Zeus establishes a real Xray tunnel with the provided configuration and requests the selected HTTPS destinations from inside that tunnel. Each destination's result and response time are reported separately.
+
+Use the **Real Test Destinations** field to provide up to eight HTTPS URLs, one per line. Zeus checks every destination through the tunnel and shows each result; multi-destination checks run against the five highest-ranked IPs.
 
 ### 6. Real Speed Test
 When the "Speed Test" option is enabled, throughput is measured from within the tunnel using `speed.cloudflare.com`, providing accurate real-world metrics rather than a raw socket test.
 
 **Key detail regarding Xray Testing:**
 In the generated test configuration, only the `address` is replaced with the candidate IP; `serverName` and `Host` remain untouched. This ensures all parameters remain constant while only the routing edge changes.
+
+After a scan, use the result controls to set maximum ping, packet-loss, and stability thresholds. The three score weights are relative and are normalized automatically. CSV and JSON exports, copied IPs, and generated replacement links include only results that pass the current filters. Generated VLESS, VMess, and Trojan links change the server address and port while preserving the original SNI and Host values.
 
 ---
 

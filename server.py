@@ -185,19 +185,47 @@ def _stdev(values):
     return int((sum((v - mean) ** 2 for v in values) / (len(values) - 1)) ** 0.5)
 
 
-def _grade(loss, median, stdev, ok):
-    """A single 0-100 score so the list can be ranked by real usability."""
+DEFAULT_SCORE_WEIGHTS = {'loss': 60.0, 'ping': 30.0, 'stability': 10.0}
+
+
+def _normalize_score_weights(weights=None):
+    """Return relative loss, latency, and stability weights normalized to 1."""
+    if not isinstance(weights, dict):
+        weights = DEFAULT_SCORE_WEIGHTS
+    cleaned = {}
+    for key in ('loss', 'ping', 'stability'):
+        try:
+            value = float(weights.get(key, DEFAULT_SCORE_WEIGHTS[key]))
+        except (TypeError, ValueError):
+            value = DEFAULT_SCORE_WEIGHTS[key]
+        if not (value >= 0 and value < float('inf')):
+            value = DEFAULT_SCORE_WEIGHTS[key]
+        cleaned[key] = min(100.0, value)
+    total = sum(cleaned.values())
+    if total <= 0:
+        cleaned = DEFAULT_SCORE_WEIGHTS.copy()
+        total = sum(cleaned.values())
+    return {key: value / total for key, value in cleaned.items()}
+
+
+def _grade(loss, median, stdev, ok, weights=None):
+    """Score candidates using normalized user-selected metric weights."""
     if not ok:
         return 0
-    score = 100.0
-    score -= loss * 0.9                                  # loss dominates
-    score -= min(45.0, median / 1000.0 * 45.0)           # 1000ms latency costs 45
-    score -= min(20.0, stdev / 200.0 * 20.0)             # instability costs up to 20
+    normalized = _normalize_score_weights(weights)
+    loss_penalty = max(0.0, min(100.0, float(loss or 0)))
+    ping_penalty = max(0.0, min(100.0, float(median or 0) / 10.0))
+    stability_penalty = max(0.0, min(100.0, float(stdev or 0) / 2.0))
+    score = 100.0 - (
+        normalized['loss'] * loss_penalty
+        + normalized['ping'] * ping_penalty
+        + normalized['stability'] * stability_penalty
+    )
     return max(0, min(100, int(round(score))))
 
 
 def scan_ip(ip, sni, ports=DEFAULT_PORTS, timeout=3.5, passes=3, deep=False,
-            cancel_event=None):
+            cancel_event=None, score_weights=None):
     """Find a working port for `ip`, then re-probe it to measure loss, jitter and stability."""
     if deep and passes < 2:
         passes = 2
@@ -256,7 +284,7 @@ def scan_ip(ip, sni, ports=DEFAULT_PORTS, timeout=3.5, passes=3, deep=False,
     ok = len(probes)
     loss = round((attempted - ok) / attempted * 100)
     median = _percentile(pings, 0.5)
-    stdev = _stdev(pings)
+    stdev = _stdev(pings) if len(pings) >= 2 else None
     usable = ok * 2 > attempted
 
     return {
@@ -274,19 +302,23 @@ def scan_ip(ip, sni, ports=DEFAULT_PORTS, timeout=3.5, passes=3, deep=False,
         'tls': min(p['tls'] for p in probes),
         'ok': ok,
         'attempts': attempted,
-        'score': _grade(loss, median, stdev, usable),
+        'score': _grade(loss, median, stdev, usable, score_weights),
         'status': probes[-1]['status'],
         'cloudflare': any(p['cloudflare'] for p in probes),
         'speed': max(speeds) if speeds else None,
     }
 
 
-def verify_with_xray(binary, spec, candidates, want_speed):
+def verify_with_xray(binary, spec, candidates, want_speed, probe_targets=None):
     """Prove each candidate actually carries the user's config, not just a TLS hello."""
     def one(item):
         result = xray.verify(binary, spec, item['ip'], next_socks_port(),
-                             port=item.get('port'), want_speed=want_speed)
+                             port=item.get('port'), want_speed=want_speed,
+                             probe_targets=probe_targets)
         payload = {'ip': item['ip'], 'ok': result['ok']}
+        for key in ('targets_ok', 'targets_total', 'targets'):
+            if key in result:
+                payload[key] = result[key]
         if result['ok']:
             payload['latency'] = result['latency']
             payload['speed'] = result.get('speed')
@@ -305,11 +337,21 @@ def verify_with_xray(binary, spec, candidates, want_speed):
     return results
 
 
-def scan_many(ips, sni, ports, timeout, passes, deep, precise, cancel_event=None):
+def scan_many(ips, sni, ports, timeout, passes, deep, precise, cancel_event=None,
+              score_weights=None):
     """Fast first-pass screening followed by accurate probing of the best candidates."""
     executor = PRECISION_EXECUTOR if precise else SCAN_EXECUTOR
-    fast_futures = [executor.submit(scan_ip, ip, sni, ports, timeout, 1, False,
-                                    cancel_event) for ip in ips]
+    normalized_weights = _normalize_score_weights(score_weights)
+    # Two quick samples give a stability-weighted scan enough information to rank
+    # candidates before the refinement shortlist is selected.
+    fast_passes = 2 if normalized_weights['stability'] > 0 else 1
+    def fast_probe(ip):
+        args = (ip, sni, ports, timeout, fast_passes, False, cancel_event)
+        if score_weights is None:
+            return scan_ip(*args)
+        return scan_ip(*args, normalized_weights)
+
+    fast_futures = [executor.submit(fast_probe, ip) for ip in ips]
     fast = [f.result() for f in fast_futures]
     working = [item for item in fast if item.get('success')]
     if not working:
@@ -317,15 +359,20 @@ def scan_many(ips, sni, ports, timeout, passes, deep, precise, cancel_event=None
 
     refine_count = min(REFINE_MAX, max(10, (len(ips) + 9) // 10))
     shortlist = sorted(working, key=lambda x: (-x.get('score', 0), x.get('ping', 10**9)))[:refine_count]
-    refined_futures = [executor.submit(scan_ip, item['ip'], sni, ports, timeout,
-                                       passes, deep, cancel_event) for item in shortlist]
+    def refine_probe(item):
+        args = (item['ip'], sni, ports, timeout, passes, deep, cancel_event)
+        if score_weights is None:
+            return scan_ip(*args)
+        return scan_ip(*args, normalized_weights)
+
+    refined_futures = [executor.submit(refine_probe, item) for item in shortlist]
     refined = {item['ip']: item for item in (f.result() for f in refined_futures)}
     return [refined.get(item['ip'], item) for item in fast]
 
 
 class ZeusRequestHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    server_version = 'ZeusScanner/1.6'
+    server_version = 'ZeusScanner/1.8'
 
     def setup(self):
         super().setup()
@@ -404,9 +451,15 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": f"invalid config: {exc}"})
             return
 
+        try:
+            probe_targets = xray.parse_probe_targets(data.get('targets'))
+        except ValueError as exc:
+            self._send_json(400, {"error": f"invalid test destinations: {exc}"})
+            return
+
         candidates = []
-        # اگر تست سرعت روشن بود ۵ تای اول، در غیر این صورت همه کاندیداها بررسی شوند
-        limit = XRAY_TOP_N if data.get('speed') else 1000
+        # Multi-destination checks are more expensive, so cap them to the top candidates.
+        limit = XRAY_TOP_N if data.get('speed') or len(probe_targets) > 1 else 1000
         for item in (data.get('candidates') or [])[:limit]:
             if not isinstance(item, dict):
                 continue
@@ -420,7 +473,8 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": "no candidates"})
             return
 
-        results = verify_with_xray(binary, spec, candidates, bool(data.get('speed')))
+        results = verify_with_xray(binary, spec, candidates, bool(data.get('speed')),
+                                   probe_targets)
         self._send_json(200, {"results": results})
 
     def do_POST(self):
@@ -505,6 +559,10 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
             if deep and passes < 2:
                 passes = 2
 
+            score_weights = data.get('score_weights')
+            if not isinstance(score_weights, dict):
+                score_weights = None
+
             scan_id = str(data.get('scan_id') or '').strip()
             if not scan_id:
                 scan_id = f'server-{threading.get_ident()}-{time.monotonic_ns()}'
@@ -526,7 +584,7 @@ class ZeusRequestHandler(BaseHTTPRequestHandler):
                         _cancelled_scans.pop(key, None)
             try:
                 results = scan_many(ips, sni, ports, 3.5, passes, deep, precise,
-                                    cancel_event)
+                                    cancel_event, score_weights)
             finally:
                 with _scan_lock:
                     if _active_scans.get(scan_id) is cancel_event:
